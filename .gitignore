@@ -1,0 +1,20 @@
+**/bin/
+**/obj/
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+build/
+artifacts/
+.tests-runtime/
+# Native binaries are rebuilt per platform; Math.NET is restored via NuGet.
+server/lib/SolverX.dll
+server/lib/MathNet.Numerics.dll
+
+**/__pycache__/
+*.pyc
+
+# The source implementation replaces the legacy assembly.
+**/KDTree.dll
+server/lib/BesoNative.dll

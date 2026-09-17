@@ -1,0 +1,21 @@
+.git
+.github
+**/bin
+**/obj
+**/.DS_Store
+**/*.log
+.env
+.env.*
+!.env.example
+server/lib/SolverX.dll
+server/lib/MathNet.Numerics.dll
+artifacts
+build
+.tests-runtime
+
+**/__pycache__/
+*.pyc
+
+# The source implementation replaces the legacy assembly.
+**/KDTree.dll
+server/lib/BesoNative.dll

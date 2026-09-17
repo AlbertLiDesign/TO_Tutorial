@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <NoWarn>CS8632;CS0168;CS0169;CS0219;CS0649;CS8981</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
+    <None Update="lib/BesoNative.dll" CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest" TargetPath="BesoNative.dll" />
+    <Content Update="provenance.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="../tests/reference-cantilever-80x50.txt" Link="fixtures/reference-cantilever-80x50.txt"
+             CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="../tests/baselines/*.json" Link="fixtures/baselines/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <Target Name="CheckNativeSolver" BeforeTargets="BeforeBuild">
+    <Error Condition="!Exists('lib/BesoNative.dll')" Text="BesoNative is missing. Run scripts/build-native.sh or use docker compose up --build." />
+  </Target>
+</Project>

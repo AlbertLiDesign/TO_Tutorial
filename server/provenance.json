@@ -1,0 +1,22 @@
+{
+  "source": "https://github.com/AlbertLiDesign/TO_Tutorial",
+  "engine": "Standalone Q4/H8 finite elements and BESO",
+  "solver": "CHOLMOD; serial assembly",
+  "spatialIndex": "Original source implementation; insertion-order distance ties",
+  "buildPlatform": "Darwin arm64",
+  "files": {
+    "server/Numerics/BESO.cs": "0e8347782f8bccf39dcd41c796c695b47453c918c270b16571e5a3b0205375da",
+    "server/Numerics/ElementVerification.cs": "270fd6c3d80f5323d6f60c1615c32dfc6f41f6d27b2c9ea4f4bc57141fffd434",
+    "server/Numerics/Elements.cs": "25a61f75d14096f848a6200dfdff1027eef1dd3040b17b9fbeeabca9ccf32afc",
+    "server/Numerics/FEModel.cs": "bf8212a168e059c44ea100e19334005529c1e9fc583916d498943ee9d22137c5",
+    "native/BesoNative/CMakeLists.txt": "615f9b2979a34f536e56128889ef989248b86cdcb03cd2b6bf99ab13e5eb223d",
+    "native/BesoNative/solver.cpp": "79e04f337dd6ca4d36efab2d4023e95ae73b2a6edc80d08933b6294a66dda476",
+    "server/Spatial/KDTree.cs": "a5488c6d8f2a1196f81a9d4fe2e68634f179bf9a9c03100a4d327b06c464106f",
+    "server/Spatial/SpatialVerification.cs": "db96d7342111e4879ecd5ea0d6aaf8ca7abad075bee61a15cdd1238a02387aca"
+  },
+  "binaries": {
+    "BesoNative.dll": "c20603038efcbd3692cb7d8d8b7361ef37dd8e1a597e003e73da28d8b4128bd4",
+    "MathNet.Numerics.dll": "83b41a608e438409d6520d01124f52f57409e229791c0e074e315ace7d9f4134",
+    "TopTeach.dll": "38240dcdbeba9a9bad0a7149b29d544512d12c797353479c698252bc4a1c14d9"
+  }
+}
