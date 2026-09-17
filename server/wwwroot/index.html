@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BESO Lab</title>
-  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body data-pane="parameters" data-result="model">
 <header>
@@ -59,7 +59,7 @@
     <div class="viewport">
       <div class="view-toolbar">
         <div class="view-options"><button id="solid-view" class="selected"><span data-i18n="材料分布">材料分布</span></button><button id="sensitivity-view"><span data-i18n="敏度场">敏度场</span></button></div>
-        <div class="view-actions"><label class="check"><input type="checkbox" id="grid"><span data-i18n="网格">网格</span></label><button id="fit" class="text-button"><span data-i18n="重置视角">重置视角</span></button></div>
+        <div class="view-actions"><label class="check"><input type="checkbox" id="grid"><span data-i18n="显示框线">显示框线</span></label><button id="fit" class="text-button"><span data-i18n="重置视角">重置视角</span></button></div>
       </div>
       <canvas id="scene" data-i18n-aria="悬臂梁有限元拓扑结果" aria-label="悬臂梁有限元拓扑结果"></canvas>
       <div id="legend" hidden><span data-i18n="低">低</span> <i></i> <span data-i18n="高">高</span></div>
@@ -86,8 +86,9 @@
   <p id="error" role="alert"></p>
   <button id="run" type="submit" form="parameters" class="primary"><span data-i18n="开始优化">开始优化</span></button>
   <div class="run-actions"><button id="pause" disabled><span data-i18n="暂停">暂停</span></button><button id="step" disabled><span data-i18n="单步">单步</span></button><button id="stop" disabled><span data-i18n="停止">停止</span></button></div>
+  <div class="credits">Developed by <a href="https://albertlidesign.com" target="_blank" rel="noopener noreferrer">Zhi Li</a></div>
 </div>
 <dialog id="reading-dialog"><div class="dialog-heading"><h3><span data-i18n="如何读图">如何读图</span></h3><form method="dialog"><button data-i18n="关闭">关闭</button></form></div><p><span data-i18n="材料分布为本步更新后的结果；应变能与敏度来自更新前的分析。">材料分布为本步更新后的结果；应变能与敏度来自更新前的分析。</span></p><p><span data-i18n="C/C₀ 为相对初始应变能，V/V₀ 为体积分数。">C/C₀ 为相对初始应变能，V/V₀ 为体积分数。</span></p><p><span data-i18n="采用线弹性、小变形模型。">采用线弹性、小变形模型。</span></p></dialog>
-<script src="app.js?v=7" type="module"></script>
+<script src="app.js?v=8" type="module"></script>
 </body>
 </html>

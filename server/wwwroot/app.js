@@ -1,5 +1,5 @@
-import {showPane} from './layout.js?v=7';
-import {t, meshText, applyLanguage, toggleLanguage} from './i18n.js?v=7';
+import {showPane} from './layout.js?v=8';
+import {t, meshText, applyLanguage, toggleLanguage} from './i18n.js?v=8';
 const $=s=>document.querySelector(s), fields=['nx','ny','nz','vf','er','radius','penalty','maxIter','young','nu','force','loadY'];
 let dim=2,runId=null,frames=[],current=-1,state='ready',running=false,sensitivity=false,follow=true,pollTimer=null,requesting=false,polling=false;
 let activeSettings=null,angle=-.55,pitch=.35,zoom=1,drag=null;
