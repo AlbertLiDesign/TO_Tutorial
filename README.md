@@ -1,42 +1,42 @@
 # BESO Lab · TO Tutorial
 
-面向教学的二维／三维 BESO 拓扑优化工具，支持中英文切换，在浏览器中观察结构从实体逐步演化的过程。
+An interactive 2D and 3D BESO topology optimization tool for teaching, with English and Chinese interfaces.
 
-默认算例为 **80×50 悬臂梁**；三维版本为 **80×50×4**。左端固定，自由端中点向下受力。
+The default example is an **80 × 50 cantilever** in 2D, or **80 × 50 × 4** in 3D, fixed at the left end with a downward load at the midpoint of the right end.
 
-## 主要功能
+## Features
 
-- 调整网格分辨率、目标体积分数、演化率、滤波半径、材料与载荷等参数。
-- 暂停、单步运行、继续和停止优化，回放各步结果。
-- 查看材料分布、敏度场和演化曲线，旋转与缩放三维模型。
-- 导出参数与计算记录。
+- Adjust mesh resolution, volume fraction, evolution rate, filter radius, material properties, and loads.
+- Pause, step, resume, and replay the optimization history.
+- Explore material layouts, sensitivity fields, and convergence curves. Rotate and zoom 3D results.
+- Export settings and results.
 
-## 快速启动
+## Quick start
 
-安装并启动 Docker，在项目目录运行：
+Install and start Docker, then run from the project directory:
 
 ```sh
 docker compose up --build -d
 ```
 
-打开 <http://127.0.0.1:5080> 即可使用。如端口已占用，可改用：
+Open <http://localhost:5080>. If the port is already in use:
 
 ```sh
 BESO_PORT=5081 docker compose up --build -d
 ```
 
-此时访问 <http://127.0.0.1:5081>。
+Then open <http://localhost:5081>.
 
-停止服务：
+To stop:
 
 ```sh
 docker compose down
 ```
 
-计算记录不会永久保存，请在停止或重启服务前导出所需结果。
+Results are temporary. Export anything you want to keep before stopping or restarting the service.
 
-## 说明
+## Notes
 
-数值结果已通过二维和三维基准算例校对。工具用于线弹性、小变形条件下的拓扑优化教学。
+Numerical results have been checked against 2D and 3D benchmark cases. The tool is intended for teaching topology optimization under linear elasticity and small deformations.
 
-更多部署方式见 [分发说明](docs/DISTRIBUTION.md)。本项目采用 [MIT 许可证](LICENSE)，第三方组件条款见 [第三方声明](THIRD_PARTY_NOTICES.md)。
+See the [deployment guide](docs/DISTRIBUTION.md) for more options. Licensed under [MIT](LICENSE); see [third-party notices](THIRD_PARTY_NOTICES.md).
