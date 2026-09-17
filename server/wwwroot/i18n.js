@@ -73,7 +73,10 @@ const english = {
   "左端固定，载荷作用于右端。": "Left end fixed; load applied at the right end.",
   "材料分布为本步更新后的结果；应变能与敏度来自更新前的分析。": "Material shows the updated design. Energy and sensitivity are calculated before the update.",
   "C/C₀ 为相对初始应变能，V/V₀ 为体积分数。": "C/C₀ is energy relative to the first iteration; V/V₀ is the volume fraction.",
-  "采用线弹性、小变形模型。": "Linear elasticity with small deformations."
+  "采用线弹性、小变形模型。": "Linear elasticity with small deformations.",
+  "计算结果": "Results",
+  "模型": "Model",
+  "关闭": "Close"
 };
 let language = 'zh';
 try { language = localStorage.getItem('beso-language') === 'en' ? 'en' : 'zh'; } catch {}

@@ -4,14 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BESO Lab</title>
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
-<body>
+<body data-pane="parameters" data-result="model">
 <header>
   <a class="brand" href="/">BESO <span>LAB</span></a>
   <span class="subbrand"><span data-i18n="拓扑优化">拓扑优化</span></span>
   <div class="header-actions"><span id="connection" role="status"></span><button id="language" type="button" aria-label="Switch to English" lang="en">English</button></div>
 </header>
+<nav class="mobile-nav" aria-label="Workspace">
+  <button type="button" data-pane="parameters" class="selected" aria-pressed="true"><span data-i18n="参数设置">参数设置</span></button>
+  <button type="button" data-pane="results" aria-pressed="false"><span data-i18n="计算结果">计算结果</span></button>
+</nav>
 <main>
   <aside>
     <div class="section-head"><h1><span data-i18n="参数设置">参数设置</span></h1><button id="reset" class="text-button"><span data-i18n="恢复默认">恢复默认</span></button></div>
@@ -19,31 +23,39 @@
       <button class="selected" role="tab" aria-selected="true" data-dim="2"><span data-i18n="2D 平面">2D 平面</span></button>
       <button role="tab" aria-selected="false" data-dim="3"><span data-i18n="3D 实体">3D 实体</span></button>
     </div>
+    <nav class="parameter-nav" aria-label="Parameter groups">
+      <button type="button" data-panel="mesh-panel" class="selected" aria-pressed="true"><span data-i18n="网格">网格</span></button>
+      <button type="button" data-panel="optimization-panel" aria-pressed="false"><span data-i18n="优化">优化</span></button>
+      <button type="button" data-panel="material-panel" aria-pressed="false"><span data-i18n="材料与载荷">材料与载荷</span></button>
+    </nav>
     <form id="parameters">
       <fieldset id="fields">
+        <section id="mesh-panel" class="parameter-panel">
         <h3 class="group-title"><span data-i18n="网格">网格</span></h3>
         <div class="grid-fields mesh-fields"><label><span data-i18n="宽度 Nx">宽度 Nx</span><input id="nx" type="number" min="4" max="200" value="80" required></label><label><span data-i18n="高度 Ny">高度 Ny</span><input id="ny" type="number" min="4" max="150" value="50" required></label><label id="depth-label" hidden><span data-i18n="厚度 Nz">厚度 Nz</span><input id="nz" type="number" min="1" max="32" value="4" required></label></div>
         <div class="mesh-presets"><button type="button" data-mesh="40,25">40 × 25</button><button type="button" data-mesh="80,50" class="active">80 × 50</button><button type="button" data-mesh="120,75">120 × 75</button></div>
         <p class="hint" id="mesh-info"></p>
-        <div class="parameter-group">
+        </section>
+        <section id="optimization-panel" class="parameter-panel" hidden>
           <h3 class="group-title"><span data-i18n="优化">优化</span></h3>
           <label class="range-label"><span><span data-i18n="目标体积分数">目标体积分数</span></span><output id="vf-value">50%</output><input id="vf" type="range" min="5" max="95" value="50"></label>
           <div class="grid-fields"><label><span data-i18n="演化率 ER (%)">演化率 ER (%)</span><input id="er" type="number" min="0.1" max="20" step="0.1" value="2" required></label><label><span data-i18n="滤波半径 r">滤波半径 r</span><input id="radius" type="number" min="1" max="8" step="0.1" value="3" required></label><label><span data-i18n="惩罚指数 p">惩罚指数 p</span><input id="penalty" type="number" min="1" max="5" step="0.1" value="3" required></label><label><span data-i18n="最大迭代数">最大迭代数</span><input id="maxIter" type="number" min="1" max="300" value="100" required></label></div>
           <p class="hint"><span data-i18n="滤波半径以单元边长为单位。">滤波半径以单元边长为单位。</span></p>
-        </div>
-        <details class="material-details">
-          <summary><span data-i18n="材料与载荷">材料与载荷</span></summary>
+        </section>
+        <section id="material-panel" class="parameter-panel" hidden>
+          <h3 class="group-title"><span data-i18n="材料与载荷">材料与载荷</span></h3>
           <div class="grid-fields"><label><span data-i18n="弹性模量 E">弹性模量 E</span><input id="young" type="number" min="0.000001" max="1000000000" step="any" value="1" required></label><label><span data-i18n="泊松比 ν">泊松比 ν</span><input id="nu" type="number" min="0" max="0.489" step="any" value="0.30000001192092896" required></label><label><span data-i18n="竖向力 Fy">竖向力 Fy</span><input id="force" type="number" min="-1000000" max="1000000" step="any" value="-1" required></label><label><span data-i18n="加载高度 y/H">加载高度 y/H</span><input id="loadY" type="number" min="0" max="1" step="0.05" value="0.5" required></label></div>
           <p class="hint"><span data-i18n="左端固定，载荷作用于右端。">左端固定，载荷作用于右端。</span></p>
-        </details>
+        </section>
       </fieldset>
-      <button id="run" type="submit" class="primary"><span data-i18n="开始优化">开始优化</span></button>
     </form>
-    <div class="run-actions"><button id="pause" disabled><span data-i18n="暂停">暂停</span></button><button id="step" disabled><span data-i18n="单步">单步</span></button><button id="stop" disabled><span data-i18n="停止">停止</span></button></div>
-    <p id="error" role="alert"></p>
   </aside>
   <section class="workspace">
     <div class="workspace-heading"><h2 id="model-title"></h2><div id="status" class="status"><span data-i18n="就绪">就绪</span></div></div>
+    <nav class="result-nav" aria-label="Result views">
+      <button type="button" data-result="model" class="selected" aria-pressed="true"><span data-i18n="模型">模型</span></button>
+      <button type="button" data-result="history" aria-pressed="false"><span data-i18n="演化曲线">演化曲线</span></button>
+    </nav>
     <div class="viewport">
       <div class="view-toolbar">
         <div class="view-options"><button id="solid-view" class="selected"><span data-i18n="材料分布">材料分布</span></button><button id="sensitivity-view"><span data-i18n="敏度场">敏度场</span></button></div>
@@ -65,11 +77,17 @@
       <div class="scrubber"><label for="timeline"><span data-i18n="迭代回放">迭代回放</span></label><input id="timeline" type="range" min="0" max="0" value="0" disabled><output id="timeline-label">0 / 0</output><button id="live" class="text-button"><span data-i18n="最新">最新</span></button></div>
     </section>
     <footer>
-      <details class="reading-notes"><summary><span data-i18n="如何读图">如何读图</span></summary><p><span data-i18n="材料分布为本步更新后的结果；应变能与敏度来自更新前的分析。">材料分布为本步更新后的结果；应变能与敏度来自更新前的分析。</span></p><p><span data-i18n="C/C₀ 为相对初始应变能，V/V₀ 为体积分数。">C/C₀ 为相对初始应变能，V/V₀ 为体积分数。</span></p><p><span data-i18n="采用线弹性、小变形模型。">采用线弹性、小变形模型。</span></p></details>
+      <button id="reading-help" class="text-button" type="button"><span data-i18n="如何读图">如何读图</span></button>
       <button id="download" class="text-button" disabled><span data-i18n="导出结果">导出结果</span></button>
     </footer>
   </section>
 </main>
-<script src="app.js?v=4" type="module"></script>
+<div class="run-bar">
+  <p id="error" role="alert"></p>
+  <button id="run" type="submit" form="parameters" class="primary"><span data-i18n="开始优化">开始优化</span></button>
+  <div class="run-actions"><button id="pause" disabled><span data-i18n="暂停">暂停</span></button><button id="step" disabled><span data-i18n="单步">单步</span></button><button id="stop" disabled><span data-i18n="停止">停止</span></button></div>
+</div>
+<dialog id="reading-dialog"><div class="dialog-heading"><h3><span data-i18n="如何读图">如何读图</span></h3><form method="dialog"><button data-i18n="关闭">关闭</button></form></div><p><span data-i18n="材料分布为本步更新后的结果；应变能与敏度来自更新前的分析。">材料分布为本步更新后的结果；应变能与敏度来自更新前的分析。</span></p><p><span data-i18n="C/C₀ 为相对初始应变能，V/V₀ 为体积分数。">C/C₀ 为相对初始应变能，V/V₀ 为体积分数。</span></p><p><span data-i18n="采用线弹性、小变形模型。">采用线弹性、小变形模型。</span></p></dialog>
+<script src="app.js?v=6" type="module"></script>
 </body>
 </html>
