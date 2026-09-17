@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BESO Lab</title>
-  <link rel="stylesheet" href="style.css?v=8">
+  <link rel="stylesheet" href="style.css?v=9">
 </head>
 <body data-pane="parameters" data-result="model">
 <header>
@@ -67,12 +67,12 @@
     </div>
     <div class="metrics">
       <div><span><span data-i18n="迭代步">迭代步</span></span><strong id="iteration">000</strong><small id="iteration-cap">/ 100</small></div>
-      <div><span><span data-i18n="应变能 C">应变能 C</span></span><strong id="compliance">—</strong><small>½uᵀKu</small></div>
+      <div><span><span data-i18n="应变能 C">应变能 C</span></span><strong id="compliance">—</strong></div>
       <div><span><span data-i18n="体积分数">体积分数</span></span><strong id="volume">100.0<em>%</em></strong><small id="target-label"></small></div>
       <div><span><span data-i18n="变化率 Δ">变化率 Δ</span></span><strong id="delta">—</strong><small><span data-i18n="阈值 0.001">阈值 0.001</span></small></div>
     </div>
     <section class="history">
-      <div class="panel-title"><h3><span data-i18n="演化曲线">演化曲线</span></h3><div class="chart-keys"><span><i></i>C/C₀</span><span><i class="volume-key"></i>V/V₀</span></div></div>
+      <div class="panel-title"><h3><span data-i18n="演化曲线">演化曲线</span></h3><div class="chart-keys"><span><i></i>C</span><span><i class="volume-key"></i>V/V₀</span></div></div>
       <canvas id="chart" data-i18n-aria="目标函数和体积分数迭代曲线" aria-label="目标函数和体积分数迭代曲线"></canvas>
       <div class="scrubber"><label for="timeline"><span data-i18n="迭代回放">迭代回放</span></label><input id="timeline" type="range" min="0" max="0" value="0" disabled><output id="timeline-label">0 / 0</output><button id="live" class="text-button"><span data-i18n="最新">最新</span></button></div>
     </section>
@@ -88,7 +88,7 @@
   <div class="run-actions"><button id="pause" disabled><span data-i18n="暂停">暂停</span></button><button id="step" disabled><span data-i18n="单步">单步</span></button><button id="stop" disabled><span data-i18n="停止">停止</span></button></div>
   <div class="credits">Developed by <a href="https://albertlidesign.com" target="_blank" rel="noopener noreferrer">Zhi Li</a></div>
 </div>
-<dialog id="reading-dialog"><div class="dialog-heading"><h3><span data-i18n="如何读图">如何读图</span></h3><form method="dialog"><button data-i18n="关闭">关闭</button></form></div><p><span data-i18n="材料分布为本步更新后的结果；应变能与敏度来自更新前的分析。">材料分布为本步更新后的结果；应变能与敏度来自更新前的分析。</span></p><p><span data-i18n="C/C₀ 为相对初始应变能，V/V₀ 为体积分数。">C/C₀ 为相对初始应变能，V/V₀ 为体积分数。</span></p><p><span data-i18n="采用线弹性、小变形模型。">采用线弹性、小变形模型。</span></p></dialog>
-<script src="app.js?v=8" type="module"></script>
+<dialog id="reading-dialog"><div class="dialog-heading"><h3><span data-i18n="如何读图">如何读图</span></h3><form method="dialog"><button data-i18n="关闭">关闭</button></form></div><p><span data-i18n="材料分布为本步更新后的结果；应变能与敏度来自更新前的分析。">材料分布为本步更新后的结果；应变能与敏度来自更新前的分析。</span></p><p><span data-i18n="左轴为 C，右轴为体积分数。">左轴为 C，右轴为体积分数。</span></p><p><span data-i18n="采用线弹性、小变形模型。">采用线弹性、小变形模型。</span></p></dialog>
+<script src="app.js?v=9" type="module"></script>
 </body>
 </html>

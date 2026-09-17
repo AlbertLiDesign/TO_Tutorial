@@ -1,5 +1,5 @@
-import {showPane} from './layout.js?v=8';
-import {t, meshText, applyLanguage, toggleLanguage} from './i18n.js?v=8';
+import {showPane} from './layout.js?v=9';
+import {t, meshText, applyLanguage, toggleLanguage} from './i18n.js?v=9';
 const $=s=>document.querySelector(s), fields=['nx','ny','nz','vf','er','radius','penalty','maxIter','young','nu','force','loadY'];
 let dim=2,runId=null,frames=[],current=-1,state='ready',running=false,sensitivity=false,follow=true,pollTimer=null,requesting=false,polling=false;
 let activeSettings=null,angle=-.55,pitch=.35,zoom=1,drag=null;
@@ -52,7 +52,46 @@ if(p.dim===2){const scale=Math.min((w-115)/p.nx,(h-Math.min(70,h*.3))/p.ny),left
  c.strokeStyle=ink('canvas-support');c.lineWidth=2;c.beginPath();[[0,0,0],[0,p.ny,0],[0,p.ny,p.nz],[0,0,p.nz],[0,0,0]].map(v=>project(...v)).forEach((v,i)=>i?c.lineTo(v[0],v[1]):c.moveTo(v[0],v[1]));c.stroke();const l=project(p.nx,p.ny*p.loadY,p.nz/2);arrow(c,l[0]+3,l[1],p.force<0?1:-1,Math.min(38,h*.25));
 }
 function arrow(c,x,y,d,length=38){c.strokeStyle=ink('load');c.fillStyle=ink('load');c.lineWidth=2;c.beginPath();c.moveTo(x,y);c.lineTo(x,y+length*d);c.stroke();c.beginPath();c.moveTo(x,y+length*d);c.lineTo(x-5,y+(length-8)*d);c.lineTo(x+5,y+(length-8)*d);c.closePath();c.fill();c.font='12px sans-serif';c.textAlign='left';c.fillText('F',x+9,y+length*.5*d);}
-function drawChart(){if(!$('#chart').clientWidth||!$('#chart').clientHeight)return;const[c,w,h]=canvas($('#chart'));const left=35,right=w-10,top=15,bottom=h-23;c.font='11px sans-serif';c.textAlign='right';let c0=frames[0]?.c??1,max=Math.max(1.1,...frames.map(f=>f.c/c0));for(let j=0;j<4;j++){let y=top+(bottom-top)*j/3;c.strokeStyle=ink('canvas-grid');c.beginPath();c.moveTo(left,y);c.lineTo(right,y);c.stroke();c.fillStyle=ink('canvas-label');c.fillText((max*(1-j/3)).toFixed(1),left-7,y+4);}if(!frames.length){c.textAlign='center';c.fillStyle=ink('canvas-label');c.fillText(t('开始优化后显示真实迭代记录'),w/2,h/2);return;}
-const X=i=>left+i/Math.max(1,frames.length-1)*(right-left),Y=v=>bottom-v/max*(bottom-top);function line(fn,col){c.beginPath();frames.forEach((f,i)=>i?c.lineTo(X(i),Y(fn(f))):c.moveTo(X(i),Y(fn(f))));c.strokeStyle=col;c.lineWidth=2;c.stroke();}line(f=>f.c/c0,ink('chart-energy'));line(f=>f.volume,ink('chart-volume'));if(current>=0){c.strokeStyle=ink('canvas-cursor');c.setLineDash([3,3]);c.beginPath();c.moveTo(X(current),top);c.lineTo(X(current),bottom);c.stroke();c.setLineDash([]);}c.textAlign='left';c.fillStyle=ink('canvas-label');c.fillText('1',left,h-5);c.textAlign='right';c.fillText(t('迭代')+' '+frames.length,right,h-5);}
+function drawChart(){
+  if(!$('#chart').clientWidth||!$('#chart').clientHeight)return;
+  const[c,w,h]=canvas($('#chart'));
+  c.font='11px sans-serif';
+  if(!frames.length){
+    c.textAlign='center';c.fillStyle=ink('canvas-label');
+    c.fillText(t('开始优化后显示真实迭代记录'),w/2,h/2);return;
+  }
+  // Independent axes keep actual energy and volume fraction in their own units.
+  const peak=Math.max(...frames.map(f=>f.c));
+  const rawMax=peak>0?peak*1.05:1;
+  const step=10**Math.floor(Math.log10(rawMax))/5;
+  const max=Math.ceil(rawMax/step)*step;
+  const format=v=>v===0?'0':max>=1e5||max<.01?v.toExponential(1):Number(v.toPrecision(3)).toString();
+  const divisions=h<180?2:4;
+  const ticks=Array.from({length:divisions+1},(_,j)=>format(max*(1-j/divisions)));
+  const left=Math.max(32,...ticks.map(v=>c.measureText(v).width+8)),right=w-42;
+  const top=h<120?14:20,bottom=h-(h<120?17:23);
+  const X=i=>left+i/Math.max(1,frames.length-1)*(right-left);
+  const Y=(v,limit)=>bottom-v/limit*(bottom-top);
+  c.textAlign='left';c.fillStyle=ink('chart-energy');c.fillText('C',left,11);
+  c.textAlign='right';c.fillStyle=ink('chart-volume');c.fillText('V/V₀',right,11);
+  for(let j=0;j<=divisions;j++){
+    const y=top+(bottom-top)*j/divisions;
+    c.strokeStyle=ink('canvas-grid');c.beginPath();c.moveTo(left,y);c.lineTo(right,y);c.stroke();
+    c.textAlign='right';c.fillStyle=ink('chart-energy');c.fillText(ticks[j],left-7,y+4);
+    c.textAlign='left';c.fillStyle=ink('chart-volume');c.fillText((100-j*100/divisions)+'%',right+7,y+4);
+  }
+  function line(fn,limit,col,dashed=false){
+    c.beginPath();frames.forEach((f,i)=>i?c.lineTo(X(i),Y(fn(f),limit)):c.moveTo(X(i),Y(fn(f),limit)));
+    c.strokeStyle=col;c.lineWidth=2;c.setLineDash(dashed?[5,3]:[]);c.stroke();c.setLineDash([]);
+    if(frames.length===1){c.fillStyle=col;c.beginPath();c.arc(X(0),Y(fn(frames[0]),limit),3,0,Math.PI*2);c.fill();}
+  }
+  line(f=>f.c,max,ink('chart-energy'));
+  line(f=>f.volume,1,ink('chart-volume'),true);
+  if(current>=0){
+    c.strokeStyle=ink('canvas-cursor');c.setLineDash([3,3]);c.beginPath();c.moveTo(X(current),top);c.lineTo(X(current),bottom);c.stroke();c.setLineDash([]);
+  }
+  c.textAlign='left';c.fillStyle=ink('canvas-label');c.fillText('1',left,h-5);
+  c.textAlign='right';c.fillText(t('迭代')+' '+frames.length,right,h-5);
+}
 $('#scene').onpointerdown=e=>{if(modelSettings().dim!==3)return;drag=[e.clientX,e.clientY];e.target.setPointerCapture(e.pointerId);};$('#scene').onpointermove=e=>{if(!drag)return;angle+=(e.clientX-drag[0])*.008;pitch=Math.max(-1.4,Math.min(1.4,pitch+(e.clientY-drag[1])*.008));drag=[e.clientX,e.clientY];drawScene(modelSettings(),frames[current]);};$('#scene').onpointerup=()=>drag=null;$('#scene').onpointercancel=()=>drag=null;$('#scene').addEventListener('wheel',e=>{if(modelSettings().dim!==3)return;e.preventDefault();zoom=Math.min(3,Math.max(.4,zoom*Math.exp(-e.deltaY*.001)));drawScene(modelSettings(),frames[current]);},{passive:false});
 const resizeCanvas=new ResizeObserver(()=>render());resizeCanvas.observe($('#scene'));resizeCanvas.observe($('#chart'));updateForm();api('/api/health').then(()=>setConnection('原生计算核心已连接')).catch(()=>{setConnection('计算服务未连接');showError('无法连接 BESO 计算服务，请启动服务器。');});
