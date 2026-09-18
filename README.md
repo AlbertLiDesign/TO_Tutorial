@@ -8,7 +8,7 @@ The default example is an **80 × 50 cantilever** in 2D, or **80 × 50 × 4** in
 
 ## Features
 
-- Choose an optimization method and adjust its parameters.
+- Choose an optimization method and adjust its parameters, including soft-kill or hard-kill BESO.
 - Adjust mesh resolution, volume fraction, evolution rate, filter radius, material properties, and loads.
 - Pause, step, resume, and replay the optimization history.
 - Explore material layouts, sensitivity fields, and convergence curves. Rotate and zoom 3D results.

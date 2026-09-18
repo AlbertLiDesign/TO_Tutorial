@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Top Lab</title>
-  <link rel="stylesheet" href="style.css?v=10">
+  <link rel="stylesheet" href="style.css?v=11">
 </head>
 <body data-section="app" data-pane="parameters" data-result="model">
 <header>
@@ -39,7 +39,7 @@
         <section id="optimization-panel" class="parameter-panel" hidden>
           <h3 class="group-title"><span data-i18n="优化">优化</span></h3>
           <label class="range-label"><span><span data-i18n="目标体积分数">目标体积分数</span></span><output id="vf-value">50%</output><input id="vf" type="range" min="5" max="95" value="50"></label>
-          <div class="grid-fields"><label data-methods="BESO ESO level-set"><span data-i18n="演化率 ER (%)">演化率 ER (%)</span><input id="er" type="number" min="0.1" max="20" step="0.1" value="2" required></label><label><span data-i18n="滤波半径 r">滤波半径 r</span><input id="radius" type="number" min="1" max="8" step="0.1" value="3" required></label><label data-methods="BESO ESO SIMP"><span data-i18n="惩罚指数 p">惩罚指数 p</span><input id="penalty" type="number" min="1" max="5" step="0.1" value="3" required></label><label data-methods="SIMP" hidden><span data-i18n="移动上限">移动上限</span><input id="moveLimit" type="number" min="0.01" max="0.5" step="0.01" value="0.2" required></label><label data-methods="level-set" hidden><span data-i18n="时间步长">时间步长</span><input id="timeStep" type="number" min="0.01" max="0.5" step="0.01" value="0.2" required></label><label data-methods="level-set" hidden><span data-i18n="边界平滑">边界平滑</span><input id="regularization" type="number" min="0" max="0.3" step="0.01" value="0.15" required></label><label><span data-i18n="最大迭代数">最大迭代数</span><input id="maxIter" type="number" min="1" max="300" value="100" required></label></div>
+          <div class="grid-fields"><label data-methods="BESO"><span data-i18n="删除方式">删除方式</span><select id="besoKill"><option value="soft">Soft kill</option><option value="hard">Hard kill</option></select></label><label data-methods="BESO ESO level-set"><span data-i18n="演化率 ER (%)">演化率 ER (%)</span><input id="er" type="number" min="0.1" max="20" step="0.1" value="2" required></label><label><span data-i18n="滤波半径 r">滤波半径 r</span><input id="radius" type="number" min="1" max="8" step="0.1" value="3" required></label><label data-methods="BESO ESO SIMP"><span data-i18n="惩罚指数 p">惩罚指数 p</span><input id="penalty" type="number" min="1" max="5" step="0.1" value="3" required></label><label data-methods="SIMP" hidden><span data-i18n="移动上限">移动上限</span><input id="moveLimit" type="number" min="0.01" max="0.5" step="0.01" value="0.2" required></label><label data-methods="level-set" hidden><span data-i18n="时间步长">时间步长</span><input id="timeStep" type="number" min="0.01" max="0.5" step="0.01" value="0.2" required></label><label data-methods="level-set" hidden><span data-i18n="边界平滑">边界平滑</span><input id="regularization" type="number" min="0" max="0.3" step="0.01" value="0.15" required></label><label><span data-i18n="最大迭代数">最大迭代数</span><input id="maxIter" type="number" min="1" max="300" value="100" required></label></div>
           <p class="hint"><span data-i18n="滤波半径以单元边长为单位。">滤波半径以单元边长为单位。</span></p>
         </section>
         <section id="material-panel" class="parameter-panel" hidden>
@@ -94,6 +94,6 @@
   <article id="lesson-content" tabindex="0"></article>
   <div class="lesson-controls"><button id="lesson-prev" type="button">←</button><span id="lesson-page"></span><button id="lesson-next" type="button">→</button></div>
 </section>
-<script src="app.js?v=10" type="module"></script>
+<script src="app.js?v=11" type="module"></script>
 </body>
 </html>

@@ -19,11 +19,17 @@ public sealed class FEModel : IDisposable
         for(int i=0;i<nodes.Count;i++)nodes[i].ID=i;
         for(int i=0;i<elements.Count;i++)elements[i].ID=i;
     }
-    public void Initialize()
+    public void Initialize(bool hardKill=false)
     {
         if(Dim is not (2 or 3)||Elements.Count==0||Loads.Count==0||Supports.Count==0)throw new ArgumentException("Incomplete finite-element model");
         var fixedDof=new bool[Nodes.Count*Dim];
         foreach(var s in Supports){fixedDof[s.NodeID*Dim]|=s.Ux;fixedDof[s.NodeID*Dim+1]|=s.Uy;if(Dim==3)fixedDof[s.NodeID*Dim+2]|=s.Uz;}
+        if(hardKill){
+            var active=new bool[Nodes.Count];
+            foreach(var e in Elements.Where(e=>e.Xe>0))foreach(var node in e.Nodes)active[node.ID]=true;
+            foreach(var load in Loads)if(!active[load.NodeID]&&(load.X!=0||load.Y!=0||load.Z!=0))throw new InvalidOperationException("Hard-kill design disconnects a load.");
+            for(int i=0;i<Nodes.Count;i++)if(!active[i])for(int d=0;d<Dim;d++)fixedDof[i*Dim+d]=true;
+        }
         int count=0;globalToFree=fixedDof.Select(f=>f?-1:count++).ToArray();
         if(count==0)throw new ArgumentException("The model has no free degrees of freedom");
         var adjacency=Enumerable.Range(0,count).Select(_=>new HashSet<int>()).ToArray();
@@ -38,6 +44,7 @@ public sealed class FEModel : IDisposable
         {
             if(e!=first){if(SameGeometry(e))e.Ke=first.Ke;else e.ComputeKe();}
             e.DOFs=e.Nodes.SelectMany(n=>Enumerable.Range(0,Dim).Select(d=>n.ID*Dim+d)).ToArray();
+            if(hardKill&&e.Xe==0)continue;
             for(int i=0;i<e.DOFs.Length;i++)for(int j=i;j<e.DOFs.Length;j++)
             {int a=globalToFree[e.DOFs[i]],b=globalToFree[e.DOFs[j]];if(a>=0&&b>=0)adjacency[Math.Min(a,b)].Add(Math.Max(a,b));}
         }
@@ -47,12 +54,14 @@ public sealed class FEModel : IDisposable
         Dispose();handle=NativeCreate(rows,columns,values,count,columns.Length);
         if(handle==IntPtr.Zero)throw new InvalidOperationException("CHOLMOD symbolic analysis failed");
     }
+    public int FreeDofCount=>force?.Length??0;
+    public void AnalyzeHardKill(){Initialize(true);Analyze(1);}
     public void Analyze(double penalty)
     {
         Array.Clear(values);
         foreach(var e in Elements)
         {
-            double factor=Math.Pow(e.Xe,penalty);
+            double factor=Math.Pow(e.Xe,penalty);if(factor==0)continue;
             for(int i=0;i<e.DOFs.Length;i++)
             {
                 int a=globalToFree[e.DOFs[i]];if(a<0)continue;

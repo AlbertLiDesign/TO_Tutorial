@@ -5,11 +5,13 @@ using Tutorial.Optimization;
 public record Settings(int Dim=2, int Nx=80, int Ny=50, int Nz=4, double Vf=.5,
     double Er=.02, double Radius=3, double Penalty=3, int MaxIter=100,
     double Young=1, double Nu=.30000001192092896, double Force=-1, double LoadY=.5,
-    string Method="BESO", double MoveLimit=.2, double TimeStep=.2, double Regularization=.15)
+    string Method="BESO", double MoveLimit=.2, double TimeStep=.2, double Regularization=.15, string BesoKill="soft")
 {
+    public bool HardKill=>BesoKill=="hard";
     public string MethodKey => Method?.Trim().ToUpperInvariant();
     public void Validate()
     {
+        if(BesoKill is not ("soft" or "hard"))throw new ArgumentException("BESO kill mode must be soft or hard.");
         if (MethodKey is not ("BESO" or "SIMP" or "ESO" or "LEVEL-SET"))
             throw new ArgumentException("Unknown method. Choose SIMP, BESO, ESO or level-set.");
         if (!double.IsFinite(MoveLimit+TimeStep+Regularization) || MoveLimit<.01 || MoveLimit>.5 || TimeStep<.01 || TimeStep>.5 || Regularization<0 || Regularization>.3)
@@ -51,6 +53,7 @@ public static class Engine
     {
         s.Validate();model??=Build(s);
         return s.MethodKey switch {
+            "BESO" when s.HardKill => new HardKillBESO(model,s),
             "SIMP" => new SIMP(model,s),
             "ESO" => new ESO(model,s),
             "LEVEL-SET" => new LevelSetOptimizer(model,s),
