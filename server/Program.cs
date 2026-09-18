@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
+if(args.Contains("--verify-methods")){MethodVerification.Run();return;}
 if(args.Contains("--verify-elements")){Tutorial.Fem.ElementVerification.Run();return;}
 if(args.Contains("--verify-spatial")){SpatialVerification.Run();return;}
 if(args.Contains("--verify-legacy")){LegacyParity.Run();return;}
@@ -14,7 +15,7 @@ app.Use(async(ctx,next)=>{
     await next();
 });
 app.UseDefaultFiles();app.UseStaticFiles();
-app.MapGet("/api/health",()=>Results.Ok(new{engine="BESO Lab Q4/H8",solver="Eigen CHOLMOD",assembly="serial",status="ready"}));
+app.MapGet("/api/health",()=>Results.Ok(new{engine="Top Lab Q4/H8",methods=new[]{"BESO","SIMP","ESO","level-set"},solver="Eigen CHOLMOD",assembly="serial",status="ready"}));
 app.MapPost("/api/runs",(Settings s)=>{
     try{s.Validate();}catch(ArgumentException e){return Results.BadRequest(new{error=e.Message});}
     lock(admission){

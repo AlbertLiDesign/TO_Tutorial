@@ -4,7 +4,7 @@ using KDTree;
 namespace Tutorial.Optimization;
 
 /// <summary>Compliance-minimizing soft-kill BESO with history-averaged sensitivity.</summary>
-public sealed class BESO
+public sealed class BESO : IOptimizer
 {
     public FEModel Model {get;}
     public int iter {get;private set;}

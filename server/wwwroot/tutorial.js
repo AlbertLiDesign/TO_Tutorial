@@ -1,0 +1,52 @@
+import {locale} from './i18n.js?v=10';
+
+// Original teaching text; the references are primary sources for each method family.
+const lessons = [
+  {
+    zh:['设计问题','把材料放在哪里？',`<p>拓扑优化在给定设计域、载荷和支撑条件下，寻找材料的分布。它既能改变外形，也能形成孔洞。</p><div class="theory-equation">min C(ρ) &nbsp; subject to &nbsp; K(ρ)u = f, &nbsp; V(ρ) ≤ V*</div><p>本例的目标是在材料用量受限时，让悬臂梁尽可能刚。左端固定，右端受竖向力；ρ 表示单元材料密度，V* 是目标体积。</p><div class="theory-flow"><span>设计域与边界条件</span><b>→</b><span>材料分布</span><b>→</b><span>结构响应</span></div><p>比较不同方法时，应使用相同的网格、材料、载荷、支撑与目标体积分数。最终图像相似，并不代表数值或方法相同。</p>`],
+    en:['The design problem','Where should material go?',`<p>Topology optimization distributes material within a design domain under prescribed loads and supports. Both the outer shape and internal holes can change.</p><div class="theory-equation">min C(ρ) &nbsp; subject to &nbsp; K(ρ)u = f, &nbsp; V(ρ) ≤ V*</div><p>The cantilever should be as stiff as possible for a limited amount of material. Its left end is fixed and a vertical force acts at the right end. ρ is element density; V* is the volume budget.</p><div class="theory-flow"><span>Domain & boundary conditions</span><b>→</b><span>Material distribution</span><b>→</b><span>Structural response</span></div><p>Compare methods with the same mesh, material, load, supports, and volume target. Similar pictures do not imply identical algorithms or numerical results.</p>`]
+  },
+  {
+    zh:['有限元与敏度','求解，再判断材料价值',`<p>设计域离散为二维四边形或三维六面体。单元刚度装配成整体矩阵 K，施加边界条件后求解位移 u。</p><div class="theory-equation">K(ρ)u = f &nbsp;&nbsp; → &nbsp;&nbsp; C &nbsp;&nbsp; → &nbsp;&nbsp; ∂C / ∂ρ</div><p>C 越小，给定载荷下的结构越刚。App 使用应变能作为 C；常见文献的柔度 fᵀu 是它的两倍，最优设计不受这个常数比例影响。</p><p>敏度描述局部材料变化对目标函数的影响。密度法中增加材料通常降低 C，因此优化时优先保留对刚度贡献大的区域。</p><p>App 显示本步更新后的材料，而 C 和敏度对应更新前的有限元分析。材料减少过程中 C 上升是正常现象，不能只比较不同用量的 C。</p>`],
+    en:['FEA & sensitivity','Solve, then measure material value',`<p>The domain is discretized into quadrilaterals in 2D or hexahedra in 3D. Element stiffnesses assemble into K; supports and loads define the displacement problem.</p><div class="theory-equation">K(ρ)u = f &nbsp;&nbsp; → &nbsp;&nbsp; C &nbsp;&nbsp; → &nbsp;&nbsp; ∂C / ∂ρ</div><p>Lower C means a stiffer structure under the same load. App reports strain energy as C. The compliance fᵀu often used in papers is twice this value; the constant factor does not change the optimum.</p><p>Sensitivity measures how a local material change affects the objective. Adding density generally reduces C, so regions that contribute more stiffness are favored.</p><p>Material is shown after each update; C and sensitivity come from the analysis before it. C can rise while material is removed. Compare stiffness at the same material budget.</p>`]
+  },
+  {
+    zh:['四种方法','同一个问题，不同的设计变量',`<table><thead><tr><th>方法</th><th>设计与更新</th></tr></thead><tbody><tr><td>SIMP</td><td>连续密度；用惩罚降低中间密度的效率，采用最优性准则（OC）更新。</td></tr><tr><td>BESO</td><td>实体／软材料；按敏度阈值删除低效材料，也允许材料重新加入。</td></tr><tr><td>ESO</td><td>从实体开始逐步删除低效材料，已删除的单元不能恢复。</td></tr><tr><td>Level set</td><td>用 φ 的正负表示内外，φ = 0 定义边界；演化这个隐式场。</td></tr></tbody></table><p>SIMP 从目标体积分数的均匀密度开始；其余方法从接近实体的设计开始，逐步缩减体积。起始 C 不适合直接排名。</p><p>App 中 ESO 采用能量排序删除；level set 采用反应–扩散教学变体、平滑界面和弱材料近似，未采用贴合边界的网格。它们不代表各方法的所有变体。</p>`],
+    en:['Four methods','One problem, different design variables',`<table><thead><tr><th>Method</th><th>Design and update</th></tr></thead><tbody><tr><td>SIMP</td><td>Continuous densities; penalization discourages intermediate material. An optimality-criteria (OC) step updates densities.</td></tr><tr><td>BESO</td><td>Solid or weak material; sensitivity thresholds remove inefficient material and allow material to return.</td></tr><tr><td>ESO</td><td>Starts solid and progressively removes inefficient material. Removed elements cannot return.</td></tr><tr><td>Level set</td><td>The sign of φ describes inside and outside; φ = 0 defines the boundary. Optimization evolves this implicit field.</td></tr></tbody></table><p>SIMP starts from uniform density at the volume target; the other methods start near solid and reduce volume gradually. Initial C values are not directly comparable.</p><p>App uses energy-ranked ESO and a reaction–diffusion level-set teaching variant with a smoothed interface and weak-material approximation, not a boundary-fitted mesh. These are specific variants, not every version of each family.</p>`]
+  },
+  {
+    zh:['更新与滤波','控制步长与空间尺度',`<div class="theory-equation">SIMP: E(ρ) = ρᵖE₀ &nbsp;&nbsp; | &nbsp;&nbsp; Level set: ∂φ/∂t = g − λ + τ∇²φ</div><p>SIMP 使用密度滤波，OC 更新限制每步密度变化，并满足滤波后的实际体积约束。p 越大，中间密度越低效；移动上限越大，更新越激进。</p><p>BESO 使用空间滤波和历史敏度平均。ESO 只在现有实体中按敏度排序删除。演化率控制每步体积缩减的速度。</p><p>Level set 的 g 是归一化、滤波后的能量驱动力，λ 控制体积，τ 平滑边界，扩散长度随滤波半径变化。时间步长过大容易振荡；App 在体积达到目标后回退使能量增加的试探步。</p><p>滤波半径以单元边长为单位。网格加密但半径不变，会改变相对结构尺度。滤波可减弱棋盘格，却不等同于已施加制造尺寸约束。</p>`],
+    en:['Updates & filtering','Control the step and spatial scale',`<div class="theory-equation">SIMP: E(ρ) = ρᵖE₀ &nbsp;&nbsp; | &nbsp;&nbsp; Level set: ∂φ/∂t = g − λ + τ∇²φ</div><p>SIMP uses a density filter. The OC update limits each density change and enforces physical volume after filtering. Larger p makes intermediate density less efficient; a larger move limit permits more aggressive steps.</p><p>BESO combines spatial filtering with history averaging. ESO ranks only existing solid elements for removal. Evolution rate controls the progressive volume reduction.</p><p>For level set, g is normalized, filtered energy driving, λ controls volume, and τ smooths the boundary at a scale set by the filter radius. Large time steps can oscillate; App backtracks energy-increasing trials once the volume target is reached.</p><p>Filter radius is measured in element edge lengths. Refining a mesh without scaling the radius changes the relative feature scale. Filtering reduces checkerboards but is not a certified manufacturing-size constraint.</p>`]
+  },
+  {
+    zh:['实验与读图','做一次可比较的实验',`<ol><li>保留默认悬臂梁，先用 BESO 运行并导出记录。</li><li>切换为 SIMP、ESO 和 Level set，保持相同的网格、载荷和体积目标。</li><li>比较最终体积分数、实际 C、迭代次数以及是否达到停止条件。</li><li>单独改变滤波半径或方法步长，观察形态与稳定性的变化。</li></ol><p>SIMP 的颜色深浅表示密度，不应把中间密度误认为实体。三维 SIMP 仅显示 ρ ≥ 0.5 的表面；显示阈值不会改变计算使用的密度。</p><p>ESO 到达目标体积后停止删除；SIMP 和 level set 同时检查能量历史与设计变化。达到迭代上限不等于已收敛，也没有全局最优保证。</p><p>本工具限于线弹性、小变形教学，不包含屈曲、屈服、断裂或加工约束。新方法通过数值一致性与算法性质检查，不声称与外部软件逐位一致。</p>`],
+    en:['Experiments & results','Make a fair comparison',`<ol><li>Run the default cantilever with BESO and export the history.</li><li>Switch to SIMP, ESO, and Level set while keeping the mesh, load, and volume target unchanged.</li><li>Compare final volume, actual C, iteration count, and stopping status.</li><li>Change only the filter radius or method step size to explore shape and stability.</li></ol><p>SIMP uses color intensity to show density: intermediate density is not solid material. Its 3D view shows the surface at ρ ≥ 0.5; this display threshold does not change the analysis.</p><p>ESO ends removal at the volume target. SIMP and level set check both energy history and design change. Reaching the iteration limit is not convergence, and no method guarantees a global optimum.</p><p>This teaching tool assumes linear elasticity and small deformations. Buckling, yielding, fracture, and fabrication constraints are excluded. New methods have numerical-consistency and algorithm-property checks, not bitwise equivalence claims against other software.</p>`]
+  },
+  {
+    zh:['参考资料','继续阅读',`<p>以下资料解释方法的理论和经典教学实现；Top Lab 是独立的教学实现。</p>`],
+    en:['References','Read further',`<p>These primary sources explain the methods and classic teaching implementations. Top Lab is an independent teaching implementation.</p>`]
+  }
+];
+const references=`<ul class="reference-list"><li><a href="https://www.topopt.mek.dtu.dk/apps-and-software/efficient-topology-optimization-in-matlab" target="_blank" rel="noopener noreferrer">Andreassen et al. · Efficient topology optimization in MATLAB using 88 lines of code (2011)</a></li><li><a href="https://doi.org/10.1016/j.finel.2007.06.006" target="_blank" rel="noopener noreferrer">Huang & Xie · Convergent and mesh-independent solutions for BESO (2007)</a></li><li><a href="https://link.springer.com/book/10.1007/978-1-4471-0985-3" target="_blank" rel="noopener noreferrer">Xie & Steven · Evolutionary Structural Optimization (1997)</a></li><li><a href="https://doi.org/10.1016/j.cma.2010.05.013" target="_blank" rel="noopener noreferrer">Yamada et al. · Level set topology optimization with fictitious interface energy (2010)</a></li></ul>`;
+let chapter=0;
+function renderLesson(){
+  const lang=locale()==='en-US'?'en':'zh';
+  document.querySelector('#lesson-nav').innerHTML=lessons.map((lesson,i)=>`<button type="button" data-lesson="${i}" class="${chapter===i?'selected':''}" aria-pressed="${chapter===i}"><span>${String(i+1).padStart(2,'0')}</span>${lesson[lang][0]}</button>`).join('');
+  const lesson=lessons[chapter][lang];
+  document.querySelector('#lesson-content').innerHTML=`<h1>${lesson[1]}</h1>${lesson[2]}${chapter===5?references:''}<a class="try-app" href="#app">${lang==='en'?'Open App →':'打开 App →'}</a>`;
+  document.querySelector('#lesson-content').scrollTop=0;
+  document.querySelectorAll('[data-lesson]').forEach(button=>button.onclick=()=>{chapter=Number(button.dataset.lesson);renderLesson();});
+  document.querySelector('#lesson-page').textContent=`${chapter+1} / ${lessons.length}`;
+  document.querySelector('#lesson-prev').disabled=chapter===0;document.querySelector('#lesson-next').disabled=chapter===lessons.length-1;
+  document.querySelector('#lesson-prev').setAttribute('aria-label',lang==='en'?'Previous chapter':'上一节');
+  document.querySelector('#lesson-next').setAttribute('aria-label',lang==='en'?'Next chapter':'下一节');
+}
+function navigate(){
+  const section=location.hash.startsWith('#tutorial')?'tutorial':'app';
+  document.body.dataset.section=section;document.querySelector('#tutorial').hidden=section!=='tutorial';
+  document.querySelectorAll('.site-nav a').forEach(a=>{const selected=a.dataset.section===section;a.classList.toggle('selected',selected);if(selected)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
+}
+document.querySelector('#lesson-prev').onclick=()=>{chapter=Math.max(0,chapter-1);renderLesson();};
+document.querySelector('#lesson-next').onclick=()=>{chapter=Math.min(lessons.length-1,chapter+1);renderLesson();};
+document.addEventListener('languagechange',renderLesson);window.addEventListener('hashchange',navigate);
+renderLesson();navigate();

@@ -4,10 +4,16 @@ using Tutorial.Optimization;
 
 public record Settings(int Dim=2, int Nx=80, int Ny=50, int Nz=4, double Vf=.5,
     double Er=.02, double Radius=3, double Penalty=3, int MaxIter=100,
-    double Young=1, double Nu=.30000001192092896, double Force=-1, double LoadY=.5)
+    double Young=1, double Nu=.30000001192092896, double Force=-1, double LoadY=.5,
+    string Method="BESO", double MoveLimit=.2, double TimeStep=.2, double Regularization=.15)
 {
+    public string MethodKey => Method?.Trim().ToUpperInvariant();
     public void Validate()
     {
+        if (MethodKey is not ("BESO" or "SIMP" or "ESO" or "LEVEL-SET"))
+            throw new ArgumentException("Unknown method. Choose SIMP, BESO, ESO or level-set.");
+        if (!double.IsFinite(MoveLimit+TimeStep+Regularization) || MoveLimit<.01 || MoveLimit>.5 || TimeStep<.01 || TimeStep>.5 || Regularization<0 || Regularization>.3)
+            throw new ArgumentException("Invalid method parameters.");
         if (Dim is not (2 or 3) || Nx<4 || Ny<4 || Nx>200 || Ny>150 || Nz<1 || Nz>32)
             throw new ArgumentException("网格范围：Nx 4–200、Ny 4–150、Nz 1–32。");
         if ((long)Nx*Ny*(Dim==3?Nz:1)>(Dim==3?32000:30000)) throw new ArgumentException("网格上限：2D 30,000 / 3D 32,000 单元。");
@@ -15,7 +21,7 @@ public record Settings(int Dim=2, int Nx=80, int Ny=50, int Nz=4, double Vf=.5,
             throw new ArgumentException("参数超出范围，请检查输入。");
     }
 }
-public record Frame(int Iter, double C, double Volume, double Delta, double Threshold, double Seconds, double[] Density, double[] Sensitivity);
+public record Frame(int Iter, double C, double Volume, double Delta, double Threshold, double Seconds, double[] Density, double[] Sensitivity, double[] LevelSet=null);
 public static class Engine
 {
     public static FEModel Build(Settings s)
@@ -41,10 +47,19 @@ public static class Engine
     }
     static IEnumerable<(int,double)> Split(double v)
     {int low=(int)Math.Floor(v);yield return(low,1-(v-low));if(v>low)yield return(low+1,v-low);}
-    public static BESO Create(Settings s,string path,FEModel model=null)=>new BESO(path,model??Build(s),s.Radius,s.Er,s.Penalty,s.Vf,s.MaxIter);
-    public static Frame Capture(BESO b,double elapsed)
+    public static IOptimizer Create(Settings s,string path,FEModel model=null)
     {
-        return new Frame(b.iter,b.LastC,b.Model.Elements.Average(e=>e.Xe),b.Delta,b.isovalues.Last(),elapsed,b.Model.Elements.Select(e=>e.Xe).ToArray(),b.Sensitivities.ToArray());
+        s.Validate();model??=Build(s);
+        return s.MethodKey switch {
+            "SIMP" => new SIMP(model,s),
+            "ESO" => new ESO(model,s),
+            "LEVEL-SET" => new LevelSetOptimizer(model,s),
+            _ => new BESO(path,model,s.Radius,s.Er,s.Penalty,s.Vf,s.MaxIter)
+        };
+    }
+    public static Frame Capture(IOptimizer b,double elapsed)
+    {
+        return new Frame(b.iter,b.LastC,b.Model.Elements.Average(e=>e.Xe),b.Delta,b.isovalues.Last(),elapsed,b.Model.Elements.Select(e=>e.Xe).ToArray(),b.Sensitivities.ToArray(),b.LevelSet?.ToArray());
     }
 }
 public sealed class Run : IDisposable
@@ -59,7 +74,7 @@ public sealed class Run : IDisposable
     public void Execute(SemaphoreSlim queue)
     {
         string dir=Path.Combine(Path.GetTempPath(),"topteach-"+Id); Directory.CreateDirectory(dir);
-        BESO b=null;
+        IOptimizer b=null;
         try
         {
             while(!queue.Wait(200)) {if(Cancel)return;}

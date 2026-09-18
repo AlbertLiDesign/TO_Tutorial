@@ -33,6 +33,10 @@ fi
 docker run --rm --read-only --tmpfs /tmp:rw,size=256m,mode=1777 \
   "$image" --verify-elements > artifacts/elements.log
 
+docker run --rm --read-only --tmpfs /tmp:rw,size=256m,mode=1777 \
+  --user "$(id -u):$(id -g)" -v "$PWD/artifacts:/reports" \
+  -e TOPTEACH_REPORT_DIR=/reports "$image" --verify-methods > artifacts/methods.log
+
 docker run -d --name "$name" --read-only --tmpfs /tmp:rw,size=256m,mode=1777 \
   --cap-drop ALL --security-opt no-new-privileges:true \
   -p "127.0.0.1:$port:8080" "$image" >/dev/null
@@ -43,6 +47,7 @@ for ((attempt=0;attempt<60;attempt++)); do
 done
 if [[ "$ready" != true ]]; then echo 'Container did not become ready.' >&2; exit 1; fi
 TOPTEACH_TEST_URL="http://127.0.0.1:$port" TOPTEACH_REPORT_DIR="$PWD/artifacts" python3 tests/api_smoke.py
+TOPTEACH_TEST_URL="http://127.0.0.1:$port" TOPTEACH_REPORT_DIR="$PWD/artifacts" python3 tests/api_methods.py
 curl -fsS "http://127.0.0.1:$port/api/provenance" > artifacts/provenance.json
 python3 - <<'PY'
 import json

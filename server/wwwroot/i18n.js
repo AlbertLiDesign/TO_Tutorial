@@ -48,7 +48,7 @@ const english = {
   "正在连接计算核心": "Connecting…",
   "原生计算核心已连接": "Connected",
   "计算服务未连接": "Disconnected",
-  "无法连接 BESO 计算服务，请启动服务器。": "Cannot connect to the BESO solver. Please start the server.",
+  "无法连接 Top Lab 计算服务，请启动服务器。": "Cannot connect to Top Lab. Please start the server.",
   "开始优化后显示真实迭代记录": "Run optimization to view the history",
   "目标": "Target",
   "迭代": "Iteration",
@@ -77,7 +77,15 @@ const english = {
   "采用线弹性、小变形模型。": "Linear elasticity with small deformations.",
   "计算结果": "Results",
   "模型": "Model",
-  "关闭": "Close"
+  "关闭": "Close",
+  "方法": "Method",
+  "移动上限": "Move limit",
+  "时间步长": "Time step",
+  "边界平滑": "Smoothing",
+  "密度": "Density",
+  "三维显示 ρ ≥ 0.5": "3D shows ρ ≥ 0.5",
+  "上一节": "Previous chapter",
+  "下一节": "Next chapter"
 };
 let language = 'zh';
 try { language = localStorage.getItem('beso-language') === 'en' ? 'en' : 'zh'; } catch {}
@@ -91,13 +99,14 @@ export function meshText(count, dim) {
 }
 export function applyLanguage() {
   document.documentElement.lang = locale();
-  document.title = 'BESO Lab · ' + t('拓扑优化');
+  document.title = 'Top Lab · ' + t('拓扑优化');
   document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = t(el.dataset.i18n));
   document.querySelectorAll('[data-i18n-aria]').forEach(el => el.setAttribute('aria-label', t(el.dataset.i18nAria)));
   const button = document.querySelector('#language');
   button.textContent = language === 'en' ? '中文' : 'English';
   button.lang = language === 'en' ? 'zh-CN' : 'en';
   button.setAttribute('aria-label', language === 'en' ? '切换到中文' : 'Switch to English');
+  document.dispatchEvent(new Event('languagechange'));
 }
 export function toggleLanguage() {
   language = language === 'en' ? 'zh' : 'en';

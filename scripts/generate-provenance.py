@@ -9,6 +9,6 @@ root=pathlib.Path(__file__).resolve().parent.parent
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
 files={str(p.relative_to(root)):sha(p) for folder in ['server/Numerics','native/BesoNative','server/Spatial'] for p in sorted((root/folder).rglob('*')) if p.is_file()}
 binaries={name:sha(args.artifacts/name) for name in ['BesoNative.dll','MathNet.Numerics.dll','TopTeach.dll']}
-data={'source':'https://github.com/AlbertLiDesign/TO_Tutorial','engine':'Standalone Q4/H8 finite elements and BESO','solver':'CHOLMOD; serial assembly','spatialIndex':'Original source implementation; insertion-order distance ties','buildPlatform':platform.system()+' '+platform.machine(),'files':files,'binaries':binaries}
+data={'source':'https://github.com/AlbertLiDesign/TO_Tutorial','engine':'Top Lab Q4/H8; SIMP, BESO, ESO and reaction-diffusion level set','solver':'CHOLMOD; serial assembly','spatialIndex':'Original source implementation; insertion-order distance ties','buildPlatform':platform.system()+' '+platform.machine(),'files':files,'binaries':binaries}
 args.output.parent.mkdir(parents=True,exist_ok=True)
 args.output.write_text(json.dumps(data,indent=2)+'\n')
