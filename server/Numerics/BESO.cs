@@ -29,7 +29,7 @@ public sealed class BESO : IOptimizer
         neighbours=new int[centres.Length][];weights=new double[centres.Length][];
         Parallel.For(0,centres.Length,i=>
         {
-            neighbours[i]=tree.NearestNeighbors(centres[i],1024,radius*radius).ToArray();
+            neighbours[i]=tree.NearestNeighbors(centres[i],centres.Length,radius*radius).ToArray();
             weights[i]=new double[neighbours[i].Length];double sum=0;
             for(int k=0;k<neighbours[i].Length;k++)
             {

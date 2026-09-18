@@ -25,8 +25,15 @@ public sealed class FEModel : IDisposable
         var fixedDof=new bool[Nodes.Count*Dim];
         foreach(var s in Supports){fixedDof[s.NodeID*Dim]|=s.Ux;fixedDof[s.NodeID*Dim+1]|=s.Uy;if(Dim==3)fixedDof[s.NodeID*Dim+2]|=s.Uz;}
         if(hardKill){
-            var active=new bool[Nodes.Count];
-            foreach(var e in Elements.Where(e=>e.Xe>0))foreach(var node in e.Nodes)active[node.ID]=true;
+            // A disconnected, unloaded free body has arbitrary rigid displacement
+            // and zero strain. Eliminate that block without modifying its material.
+            var adjacencyNodes=Enumerable.Range(0,Nodes.Count).Select(_=>new List<int>()).ToArray();
+            foreach(var e in Elements.Where(e=>e.Xe>0))foreach(var node in e.Nodes)adjacencyNodes[node.ID].Add(e.ID);
+            var active=new bool[Nodes.Count];var visited=new bool[Elements.Count];var pending=new Queue<int>();
+            foreach(var support in Supports){active[support.NodeID]=true;pending.Enqueue(support.NodeID);}
+            while(pending.TryDequeue(out int i))foreach(int id in adjacencyNodes[i])if(!visited[id]){
+                visited[id]=true;foreach(var node in Elements[id].Nodes)if(!active[node.ID]){active[node.ID]=true;pending.Enqueue(node.ID);}
+            }
             foreach(var load in Loads)if(!active[load.NodeID]&&(load.X!=0||load.Y!=0||load.Z!=0))throw new InvalidOperationException("Hard-kill design disconnects a load.");
             for(int i=0;i<Nodes.Count;i++)if(!active[i])for(int d=0;d<Dim;d++)fixedDof[i*Dim+d]=true;
         }
@@ -56,12 +63,12 @@ public sealed class FEModel : IDisposable
     }
     public int FreeDofCount=>force?.Length??0;
     public void AnalyzeHardKill(){Initialize(true);Analyze(1);}
-    public void Analyze(double penalty)
+    public void Analyze(double penalty,double minimumStiffness=0)
     {
         Array.Clear(values);
         foreach(var e in Elements)
         {
-            double factor=Math.Pow(e.Xe,penalty);if(factor==0)continue;
+            double factor=minimumStiffness+(1-minimumStiffness)*Math.Pow(e.Xe,penalty);if(factor==0)continue;
             for(int i=0;i<e.DOFs.Length;i++)
             {
                 int a=globalToFree[e.DOFs[i]];if(a<0)continue;
@@ -76,7 +83,7 @@ public sealed class FEModel : IDisposable
                 }
             }
         }
-        if(NativeSolve(handle,values,force,displacement)!=1)throw new InvalidOperationException("CHOLMOD factorization or solve failed");
+        if(NativeSolve(handle,values,force,displacement)!=1)throw new InvalidOperationException("The stiffness matrix is singular or indefinite. Check disconnected material, mechanisms, supports and filter radius.");
         double U(int g){int i=globalToFree[g];return i<0?0:displacement[i];}
         foreach(var node in Nodes)node.Disp=new Vec3(U(node.ID*Dim),U(node.ID*Dim+1),Dim==3?U(node.ID*Dim+2):0);
     }

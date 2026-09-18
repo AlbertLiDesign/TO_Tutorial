@@ -20,15 +20,15 @@ public abstract class IterativeOptimizer : IOptimizer
     protected IterativeOptimizer(FEModel model,Settings s){Model=model;settings=s;}
     public virtual void Initialize()
     {
-        Model.Initialize();filter=new DensityFilter(Model,settings.Radius);
+        Model.Initialize();filter=new DensityFilter(Model,settings.Radius*settings.ElementSize);
         iter=0;converged=false;Delta=1;change=1;history.Clear();isovalues.Clear();Sensitivities.Clear();
         foreach(var e in Model.Elements)e.Xe=1;
     }
-    protected double[] Analyze(double penalty)
+    protected double[] Analyze(double penalty,double minimumStiffness=0)
     {
-        Model.Analyze(penalty);
+        Model.Analyze(penalty,minimumStiffness);
         var energy=Model.Elements.Select(e=>e.UnitEnergy()).ToArray();
-        foreach(var e in Model.Elements)e.C=Math.Pow(e.Xe,penalty)*energy[e.ID];
+        foreach(var e in Model.Elements)e.C=(minimumStiffness+(1-minimumStiffness)*Math.Pow(e.Xe,penalty))*energy[e.ID];
         history.Add(Model.Elements.Sum(e=>e.C));
         if(!double.IsFinite(LastC)||LastC<=0)throw new InvalidOperationException("Non-finite or non-positive structural energy.");
         return energy;
@@ -46,6 +46,7 @@ public abstract class IterativeOptimizer : IOptimizer
 /// <summary>SIMP with a physical density filter and an OC update with move limits.</summary>
 public sealed class SIMP : IterativeOptimizer
 {
+    public const double Emin=1e-9;
     private double[] design,volumeGradient;
     public SIMP(FEModel model,Settings s):base(model,s){}
     public override void Initialize()
@@ -57,14 +58,14 @@ public sealed class SIMP : IterativeOptimizer
     public override void Optimize(bool writeFiles=false)
     {
         if(Done())return;iter++;
-        var energy=Analyze(settings.Penalty);
-        var gain=filter.Transpose(Model.Elements.Select(e=>settings.Penalty*Math.Pow(e.Xe,settings.Penalty-1)*energy[e.ID]).ToArray());
+        var energy=Analyze(settings.Penalty,Emin);
+        var gain=filter.Transpose(Model.Elements.Select(e=>(1-Emin)*settings.Penalty*Math.Pow(e.Xe,settings.Penalty-1)*energy[e.ID]).ToArray());
         Sensitivities=gain.ToList();
         double low=0,high=gain.Select((g,i)=>g/volumeGradient[i]).Max()*1e6+1,lambda=0;
         var next=new double[design.Length];
         for(int k=0;k<100;k++){
             lambda=(low+high)*.5;
-            for(int i=0;i<next.Length;i++)next[i]=Math.Clamp(design[i]*Math.Sqrt(Math.Max(1e-30,gain[i])/(lambda*volumeGradient[i])),Math.Max(Minimum,design[i]-settings.MoveLimit),Math.Min(1,design[i]+settings.MoveLimit));
+            for(int i=0;i<next.Length;i++)next[i]=Math.Clamp(design[i]*Math.Sqrt(Math.Max(1e-30,gain[i])/(lambda*volumeGradient[i])),Math.Max(0,design[i]-settings.MoveLimit),Math.Min(1,design[i]+settings.MoveLimit));
             // Sum(Hx) = (H^T 1)^T x: exact physical-volume constraint.
             double volume=next.Select((x,i)=>x*volumeGradient[i]).Sum()/next.Length;
             if(volume>settings.Vf)low=lambda;else high=lambda;

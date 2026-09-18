@@ -2,7 +2,7 @@
 
 Learn and explore 2D and 3D topology optimization in English or Chinese.
 
-**Tutorial** introduces the theory. **App** lets you compare SIMP, BESO, ESO, and level set on the same cantilever.
+**Tutorial** is a 12-chapter bilingual course with derivations and worked exercises. **App** lets you compare SIMP, BESO, ESO, and level set on the same cantilever.
 
 The default example is an **80 × 50 cantilever** in 2D, or **80 × 50 × 4** in 3D, fixed at the left end with a downward load at the midpoint of the right end.
 
@@ -40,6 +40,6 @@ Results are temporary. Export anything you want to keep before stopping or resta
 
 ## Notes
 
-BESO has been checked against reference cases; the additional methods have passed 2D/3D numerical-consistency and algorithm checks. The tool is intended for teaching topology optimization under linear elasticity and small deformations.
+The solvers have numerical verification tests; their scope and limitations are documented in the [validation notes](docs/VALIDATION.md). The tool is intended for teaching topology optimization under linear elasticity and small deformations.
 
 See the [deployment guide](docs/DISTRIBUTION.md) for more options. Licensed under [MIT](LICENSE); see [third-party notices](THIRD_PARTY_NOTICES.md).

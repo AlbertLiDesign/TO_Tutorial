@@ -12,13 +12,36 @@ public static class MethodVerification
         using(var model=Engine.Build(new Settings(Nx:8,Ny:6))){
             model.Initialize();var filter=new DensityFilter(model,2);
             var x=Enumerable.Range(0,48).Select(i=>.55+.1*Math.Sin(i)).ToArray();
-            double Evaluate(double[] design){var rho=filter.Apply(design);foreach(var e in model.Elements)e.Xe=rho[e.ID];model.Analyze(3);return model.Elements.Sum(e=>Math.Pow(e.Xe,3)*e.UnitEnergy());}
+            double Evaluate(double[] design){var rho=filter.Apply(design);foreach(var e in model.Elements)e.Xe=rho[e.ID];model.Analyze(3,SIMP.Emin);return model.Elements.Sum(e=>(SIMP.Emin+(1-SIMP.Emin)*Math.Pow(e.Xe,3))*e.UnitEnergy());}
             Evaluate(x);
-            var dc=filter.Transpose(model.Elements.Select(e=>-3*e.Xe*e.Xe*e.UnitEnergy()).ToArray());
+            var dc=filter.Transpose(model.Elements.Select(e=>-3*(1-SIMP.Emin)*e.Xe*e.Xe*e.UnitEnergy()).ToArray());
             double maxError=0;
             foreach(int i in new[]{0,13,25,47}){const double h=1e-5;x[i]+=h;double plus=Evaluate(x);x[i]-=2*h;double minus=Evaluate(x);x[i]+=h;double numerical=(plus-minus)/(2*h);maxError=Math.Max(maxError,Math.Abs(numerical-dc[i])/Math.Max(1,Math.Abs(dc[i])));}
             Require(maxError<1e-5,"SIMP filtered sensitivity differs from finite differences");
             reports.Add(new{test="filtered SIMP gradient vs central finite differences",maxRelativeError=maxError,passed=true});
+        }
+        using(var reference=JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"fixtures","simp-independent.json")))){
+            foreach(var test in reference.RootElement.GetProperty("cases").EnumerateArray()){
+                var s=new Settings(Dim:test.GetProperty("dim").GetInt32(),Nx:12,Ny:8,Nz:2,Vf:.5,Radius:2,Method:"SIMP",MaxIter:30);
+                var optimizer=Engine.Create(s,"");using var model=optimizer.Model;optimizer.Initialize();double densityError=0,complianceError=0,workError=0;
+                foreach(var step in test.GetProperty("frames").EnumerateArray()){
+                    optimizer.Optimize();var frame=Engine.CaptureEvaluated(optimizer,s,0);
+                    var density=step.GetProperty("density").EnumerateArray().Select(v=>v.GetDouble()).ToArray();
+                    densityError=Math.Max(densityError,frame.Density.Zip(density).Max(v=>Math.Abs(v.First-v.Second)));
+                    double expected=step.GetProperty("compliance").GetDouble();complianceError=Math.Max(complianceError,Math.Abs(frame.C-expected)/expected);
+                    double work=model.Loads.Sum(l=>{var u=model.Nodes[l.NodeID].Disp;return l.X*u.X+l.Y*u.Y+l.Z*u.Z;});
+                    workError=Math.Max(workError,Math.Abs(frame.C-work)/Math.Abs(work));
+                }
+                Require(densityError<2e-5&&complianceError<2e-5&&workError<1e-7,"SIMP independent reference / same-state compliance mismatch");
+                reports.Add(new{test="SIMP 20 steps vs independent SciPy/Gauss/Brent reference",dim=s.Dim,densityError,complianceError,workError,passed=true});
+            }
+        }
+        foreach(int dim in new[]{2,3}){
+            double Energy(double size,double young,double force){using var m=Engine.Build(new Settings(Dim:dim,Nx:8,Ny:6,Nz:2,ElementSize:size,Young:young,Force:force));m.Initialize();m.Analyze(1);return 2*m.Elements.Sum(e=>e.UnitEnergy());}
+            double c=Energy(1,1,-1);
+            Require(Math.Abs(Energy(1,1,-2)/c-4)<1e-8&&Math.Abs(Energy(1,2,-1)/c-.5)<1e-8,"Load/modulus scaling");
+            Require(Math.Abs(Energy(2,1,-1)/c-(dim==2?1:.5))<1e-6,"Physical element-size scaling");
+            reports.Add(new{test="fixed-design load, modulus and physical length scaling",dim,passed=true});
         }
         // Independent derivative and interface-transport checks (not merely bounds).
         foreach(int dim in new[]{2,3}){
@@ -50,20 +73,24 @@ public static class MethodVerification
             reports.Add(new{test="hard-kill reduced mesh equality",dim,relativeError=Math.Abs(c-expected)/expected,freeDofs=full.FreeDofCount,passed=true});
         }
         foreach(int dim in new[]{2,3})foreach(string method in new[]{"BESO","BESO-hard","SIMP","ESO","level-set"}){
-            var settings=new Settings(Dim:dim,Nx:16,Ny:10,Nz:2,Vf:.6,Er:.08,MaxIter:method=="level-set"?300:80,Method:method=="BESO-hard"?"BESO":method,BesoKill:method=="BESO-hard"?"hard":"soft");
+            var settings=new Settings(Dim:dim,Nx:16,Ny:10,Nz:2,Vf:.6,Er:method=="BESO-hard"?.02:.08,MaxIter:method is "level-set" or "BESO-hard"?300:80,Method:method=="BESO-hard"?"BESO":method,BesoKill:method=="BESO-hard"?"hard":"soft");
             var solver=Engine.Create(settings,"");
             try{
                 solver.Initialize();var initial=solver.Model.Elements.Select(e=>e.Xe).ToArray();var previous=initial;double initialC=0,maxVolumeError=0;int steps=0;bool intermediate=false,hasBoundary=false;double priorEnergy=double.PositiveInfinity,priorAnalyzedVolume=1;int regrown=0;
                 while(!solver.converged){double analyzedVolume=solver.Model.Elements.Average(e=>e.Xe);int before=solver.iter;solver.Optimize();if(before==solver.iter)break;var f=Engine.Capture(solver,0);steps++;
+                    var evaluated=Engine.CaptureEvaluated(solver,settings,0);
+                    double work=solver.Model.Loads.Sum(l=>{var u=solver.Model.Nodes[l.NodeID].Disp;return l.X*u.X+l.Y*u.Y+l.Z*u.Z;});
+                    Require(Math.Abs(evaluated.C-work)<1e-7*Math.Max(1,Math.Abs(work)),method+" frame compliance does not match displayed design");
                     if(steps==1)initialC=f.C;
                     Require(double.IsFinite(f.C)&&f.C>0&&double.IsFinite(f.Delta),method+" invalid objective");
-                    Require(f.Density.All(x=>double.IsFinite(x)&&x>=(method=="BESO-hard"?0:method=="level-set"?LevelSetOptimizer.VoidStiffness:.001)-1e-10&&x<=1+1e-10),method+" density bounds");
+                    Require(f.Density.All(x=>double.IsFinite(x)&&x>=(method is "BESO-hard" or "SIMP"?0:method=="level-set"?LevelSetOptimizer.VoidStiffness:.001)-1e-10&&x<=1+1e-10),method+" density bounds");
                     Require(f.Sensitivity.Length==f.Density.Length&&f.Sensitivity.All(double.IsFinite),method+" sensitivities");
                     Require(Math.Abs(f.Density.Average()-f.Volume)<1e-12,method+" volume definition");
                     intermediate|=f.Density.Any(x=>x>.01&&x<.99);
                     if(method=="BESO-hard"){
                         Require(f.Density.All(x=>x==0||x==1),"Hard kill has nonbinary density");
-                        regrown+=f.Density.Zip(previous).Count(p=>p.First>p.Second);
+                        int added=f.Density.Zip(previous).Count(p=>p.First>p.Second);
+                        Require(added<=Math.Floor(settings.AdditionRatio*f.Density.Length+1e-10),"Hard-kill admission limit exceeded");regrown+=added;
                     }
                     if(method=="ESO")Require(f.Density.Zip(previous).All(p=>p.First<=p.Second),"ESO restored removed material");
                     if(method=="SIMP")maxVolumeError=Math.Max(maxVolumeError,Math.Abs(f.Volume-settings.Vf));

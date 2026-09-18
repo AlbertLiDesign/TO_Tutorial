@@ -5,12 +5,14 @@ using Tutorial.Optimization;
 public record Settings(int Dim=2, int Nx=80, int Ny=50, int Nz=4, double Vf=.5,
     double Er=.02, double Radius=3, double Penalty=3, int MaxIter=100,
     double Young=1, double Nu=.30000001192092896, double Force=-1, double LoadY=.5,
-    string Method="BESO", double MoveLimit=.2, double TimeStep=.2, double Regularization=.15, string BesoKill="soft")
+    string Method="BESO", double MoveLimit=.2, double TimeStep=.2, double Regularization=.15, string BesoKill="soft", double ElementSize=1, bool ProtectLoad=true, double AdditionRatio=.01)
 {
     public bool HardKill=>BesoKill=="hard";
     public string MethodKey => Method?.Trim().ToUpperInvariant();
     public void Validate()
     {
+        if(!double.IsFinite(AdditionRatio)||AdditionRatio<0||AdditionRatio>.2)throw new ArgumentException("Admission ratio must be between 0 and 0.2.");
+        if(!double.IsFinite(ElementSize)||ElementSize<.001||ElementSize>1000)throw new ArgumentException("Element size must be between 0.001 and 1000.");
         if(BesoKill is not ("soft" or "hard"))throw new ArgumentException("BESO kill mode must be soft or hard.");
         if (MethodKey is not ("BESO" or "SIMP" or "ESO" or "LEVEL-SET"))
             throw new ArgumentException("Unknown method. Choose SIMP, BESO, ESO or level-set.");
@@ -31,7 +33,7 @@ public static class Engine
         var nodes=new List<Node>(); var elements=new List<Element>();
         var material=new Material(s.Young,s.Nu); int nz=s.Dim==3?s.Nz:0;
         int Id(int x,int y,int z=0)=>(z*(s.Nx+1)+x)*(s.Ny+1)+y;
-        for(int z=0;z<=nz;z++) for(int x=0;x<=s.Nx;x++) for(int y=0;y<=s.Ny;y++) nodes.Add(new Node((double)x,(double)y,(double)z));
+        for(int z=0;z<=nz;z++) for(int x=0;x<=s.Nx;x++) for(int y=0;y<=s.Ny;y++) nodes.Add(new Node(x*s.ElementSize,y*s.ElementSize,z*s.ElementSize));
         for(int z=0;z<(s.Dim==3?s.Nz:1);z++) for(int x=0;x<s.Nx;x++) for(int y=0;y<s.Ny;y++)
         {
             var ids=new List<int>{Id(x,y,z),Id(x+1,y,z),Id(x+1,y+1,z),Id(x,y+1,z)};
@@ -57,8 +59,18 @@ public static class Engine
             "SIMP" => new SIMP(model,s),
             "ESO" => new ESO(model,s),
             "LEVEL-SET" => new LevelSetOptimizer(model,s),
-            _ => new BESO(path,model,s.Radius,s.Er,s.Penalty,s.Vf,s.MaxIter)
+            _ => new BESO(path,model,s.Radius*s.ElementSize,s.Er,s.Penalty,s.Vf,s.MaxIter)
         };
+    }
+    public static Frame CaptureEvaluated(IOptimizer b,Settings s,double elapsed)
+    {
+        // Reanalyse the displayed design: C, volume and density now refer to one state.
+        double p=s.MethodKey=="LEVEL-SET"||s.HardKill&&s.MethodKey=="BESO"?1:s.Penalty;
+        double floor=s.MethodKey=="SIMP"?SIMP.Emin:0;
+        if(s.MethodKey=="BESO"&&s.HardKill)b.Model.AnalyzeHardKill();else b.Model.Analyze(p,floor);
+        double c=2*b.Model.Elements.Sum(e=>(floor+(1-floor)*Math.Pow(e.Xe,p))*e.UnitEnergy());
+        if(!double.IsFinite(c)||c<=0)throw new InvalidOperationException("The updated design has no valid positive compliance.");
+        return Capture(b,elapsed) with {C=c};
     }
     public static Frame Capture(IOptimizer b,double elapsed)
     {
@@ -92,7 +104,7 @@ public sealed class Run : IDisposable
                     if(Steps>0)Steps--;
                     lock(Gate)State="running";
                     int prior=b.iter; b.Optimize(false);
-                    if(b.iter>prior){var f=Engine.Capture(b,clock.Elapsed.TotalSeconds);lock(Gate)Frames.Add(f);}
+                    if(b.iter>prior){var f=Engine.CaptureEvaluated(b,Settings,clock.Elapsed.TotalSeconds);f=f with {Seconds=clock.Elapsed.TotalSeconds};lock(Gate)Frames.Add(f);}
                 }
                 lock(Gate) State=Cancel?"cancelled":b.iter>=Settings.MaxIter?"limit":"converged";
             }

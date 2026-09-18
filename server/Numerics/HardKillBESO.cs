@@ -1,22 +1,31 @@
 // SPDX-License-Identifier: MIT
 using Tutorial.Fem;
+using KDTree;
 namespace Tutorial.Optimization;
 
 /// <summary>Zero-stiffness BESO with active-DOF assembly, nodal sensitivity
-/// extrapolation, and face connectivity to avoid floating material and hinges.</summary>
+/// extrapolation followed by nodal-radius filtering and global sensitivity ranking.</summary>
 public sealed class HardKillBESO : IterativeOptimizer
 {
     private double volume=1;
-    private int[][] neighbors;
-    private int[] anchors,supportCells;
+    private int[] passive;
+    private int[][] nodesInRadius;
+    private double[][] nodalWeights;
     public HardKillBESO(FEModel model,Settings s):base(model,s){}
     public override void Initialize()
     {
         base.Initialize();volume=1;
-        neighbors=GridNeighbors.Create(settings.Nx,settings.Ny,settings.Dim==3?settings.Nz:1);
-        var loaded=Model.Loads.Select(l=>l.NodeID).ToHashSet();
-        anchors=Model.Elements.Where(e=>e.Nodes.Any(n=>loaded.Contains(n.ID))).Select(e=>e.ID).ToArray();
-        supportCells=Model.Elements.Where(e=>e.Nodes.Count(n=>n.Position.X==0)>0).Select(e=>e.ID).ToArray();
+        var loads=Model.Loads.Select(l=>l.NodeID).ToHashSet();
+        passive=settings.ProtectLoad?Model.Elements.Where(e=>e.Nodes.Any(n=>loads.Contains(n.ID))).Select(e=>e.ID).ToArray():Array.Empty<int>();
+        if(passive.Length>Math.Ceiling(settings.Vf*Model.Elements.Count))throw new ArgumentException("The solid load pad exceeds the volume budget.");
+        var tree=new KDTree<int>(3);
+        foreach(var node in Model.Nodes)tree.AddPoint(new[]{node.Position.X,node.Position.Y,node.Position.Z},node.ID);
+        nodesInRadius=new int[Model.Elements.Count][];nodalWeights=new double[Model.Elements.Count][];
+        foreach(var e in Model.Elements){
+            var c=new[]{e.Nodes.Average(n=>n.Position.X),e.Nodes.Average(n=>n.Position.Y),e.Nodes.Average(n=>n.Position.Z)};
+            nodesInRadius[e.ID]=tree.NearestNeighbors(c,Model.Nodes.Count,settings.Radius*settings.Radius*settings.ElementSize*settings.ElementSize).ToArray();
+            nodalWeights[e.ID]=nodesInRadius[e.ID].Select(j=>{var p=Model.Nodes[j].Position;return Math.Max(0,settings.Radius*settings.ElementSize-Math.Sqrt(Math.Pow(p.X-c[0],2)+Math.Pow(p.Y-c[1],2)+Math.Pow(p.Z-c[2],2)));}).ToArray();
+        }
     }
     public override void Optimize(bool writeFiles=false)
     {
@@ -26,38 +35,27 @@ public sealed class HardKillBESO : IterativeOptimizer
         if(!double.IsFinite(c)||c<=0)throw new InvalidOperationException("Invalid hard-kill energy.");
         history.Add(c);
         for(int i=0;i<nodal.Length;i++)if(count[i]>0)nodal[i]/=count[i];
-        var raw=Model.Elements.Select(e=>e.Xe>0?e.C:e.Nodes.Average(n=>nodal[n.ID])).ToArray();
-        var score=filter.Apply(raw);
+        var score=new double[Model.Elements.Count];
+        foreach(var e in Model.Elements){double sum=0,total=0;for(int k=0;k<nodesInRadius[e.ID].Length;k++){
+            int j=nodesInRadius[e.ID][k];
+            double w=nodalWeights[e.ID][k];sum+=w*nodal[j];total+=w;
+        }score[e.ID]=total>0?sum/total:0;}
         if(Sensitivities.Count>0)for(int i=0;i<score.Length;i++)score[i]=(score[i]+Sensitivities[i])*.5;
         Sensitivities=score.ToList();volume=Math.Max(settings.Vf,volume*(1-settings.Er));
         var previous=Model.Elements.Select(e=>e.Xe).ToArray();
-        var selected=ConnectedSelection(score,(int)Math.Ceiling(volume*score.Length));
+        int keep=(int)Math.Ceiling(volume*score.Length);
+        var admissible=Enumerable.Range(0,score.Length).Where(i=>previous[i]==0).OrderByDescending(i=>score[i]).ThenBy(i=>i).Take((int)Math.Floor(settings.AdditionRatio*score.Length+1e-10)).ToHashSet();
+        var selected=new bool[score.Length];foreach(int i in passive)selected[i]=true;
+        foreach(int i in Enumerable.Range(0,score.Length).Where(i=>!selected[i]&&(previous[i]>0||admissible.Contains(i))).OrderByDescending(i=>score[i]).ThenBy(i=>i).Take(Math.Max(0,keep-passive.Length)))selected[i]=true;
         foreach(var e in Model.Elements)e.Xe=selected[e.ID]?1:0;
         change=Model.Elements.Count(e=>e.Xe!=previous[e.ID])/(double)score.Length;
         Finish(Model.Elements.Where(e=>e.Xe>0).Min(e=>score[e.ID]));
         converged=iter>=10&&Delta<1e-3&&change==0&&Math.Abs(Model.Elements.Average(e=>e.Xe)-settings.Vf)<=1.0/score.Length+1e-10;
     }
-    private bool[] ConnectedSelection(double[] score,int keep)
+    public static bool[] SelectBySensitivity(double[] score,int keep)
     {
-        // A minimum-cost material path joins each loaded cell to a fixed face.
-        // Remaining cells are ranked on the connected frontier; void cells can return.
-        int n=score.Length;double scale=Math.Max(score.Max(),1e-30);
-        var distance=Enumerable.Repeat(double.PositiveInfinity,n).ToArray();var parent=Enumerable.Repeat(-1,n).ToArray();
-        var queue=new PriorityQueue<int,(double,int)>();
-        foreach(int i in supportCells){distance[i]=0;queue.Enqueue(i,(0,i));}
-        while(queue.TryDequeue(out int i,out var key)){
-            if(key.Item1>distance[i])continue;
-            foreach(int j in neighbors[i]){
-                double d=distance[i]+1/Math.Sqrt(.01+Math.Max(0,score[j])/scale);
-                if(d<distance[j]){distance[j]=d;parent[j]=i;queue.Enqueue(j,(d,j));}
-            }
-        }
-        var selected=new bool[n];int total=0;
-        foreach(int start in anchors)for(int i=start;i>=0&&!selected[i];i=parent[i]){selected[i]=true;total++;}
-        var frontier=new PriorityQueue<int,(double,int)>();var queued=new bool[n];
-        void Add(int i){foreach(int j in neighbors[i])if(!selected[j]&&!queued[j]){queued[j]=true;frontier.Enqueue(j,(-score[j],j));}}
-        for(int i=0;i<n;i++)if(selected[i])Add(i);
-        while(total<keep&&frontier.TryDequeue(out int i,out _)){selected[i]=true;total++;Add(i);}
+        var selected=new bool[score.Length];
+        foreach(int i in Enumerable.Range(0,score.Length).OrderByDescending(i=>score[i]).ThenBy(i=>i).Take(Math.Clamp(keep,0,score.Length)))selected[i]=true;
         return selected;
     }
 }

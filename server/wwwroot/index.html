@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Top Lab</title>
-  <link rel="stylesheet" href="style.css?v=11">
+  <link rel="stylesheet" href="style.css?v=12">
 </head>
 <body data-section="app" data-pane="parameters" data-result="model">
 <header>
@@ -32,14 +32,14 @@
       <fieldset id="fields">
         <section id="mesh-panel" class="parameter-panel">
         <h3 class="group-title"><span data-i18n="网格">网格</span></h3>
-        <div class="grid-fields mesh-fields"><label><span data-i18n="宽度 Nx">宽度 Nx</span><input id="nx" type="number" min="4" max="200" value="80" required></label><label><span data-i18n="高度 Ny">高度 Ny</span><input id="ny" type="number" min="4" max="150" value="50" required></label><label id="depth-label" hidden><span data-i18n="厚度 Nz">厚度 Nz</span><input id="nz" type="number" min="1" max="32" value="4" required></label></div>
+        <div class="grid-fields mesh-fields"><label><span data-i18n="宽度 Nx">宽度 Nx</span><input id="nx" type="number" min="4" max="200" value="80" required></label><label><span data-i18n="高度 Ny">高度 Ny</span><input id="ny" type="number" min="4" max="150" value="50" required></label><label id="depth-label" hidden><span data-i18n="厚度 Nz">厚度 Nz</span><input id="nz" type="number" min="1" max="32" value="4" required></label><label><span data-i18n="单元边长 h">单元边长 h</span><input id="elementSize" type="number" min="0.001" max="1000" step="any" value="1" required></label></div>
         <div class="mesh-presets"><button type="button" data-mesh="40,25">40 × 25</button><button type="button" data-mesh="80,50" class="active">80 × 50</button><button type="button" data-mesh="120,75">120 × 75</button></div>
         <p class="hint" id="mesh-info"></p>
         </section>
         <section id="optimization-panel" class="parameter-panel" hidden>
           <h3 class="group-title"><span data-i18n="优化">优化</span></h3>
           <label class="range-label"><span><span data-i18n="目标体积分数">目标体积分数</span></span><output id="vf-value">50%</output><input id="vf" type="range" min="5" max="95" value="50"></label>
-          <div class="grid-fields"><label data-methods="BESO"><span data-i18n="删除方式">删除方式</span><select id="besoKill"><option value="soft">Soft kill</option><option value="hard">Hard kill</option></select></label><label data-methods="BESO ESO level-set"><span data-i18n="演化率 ER (%)">演化率 ER (%)</span><input id="er" type="number" min="0.1" max="20" step="0.1" value="2" required></label><label><span data-i18n="滤波半径 r">滤波半径 r</span><input id="radius" type="number" min="1" max="8" step="0.1" value="3" required></label><label data-methods="BESO ESO SIMP"><span data-i18n="惩罚指数 p">惩罚指数 p</span><input id="penalty" type="number" min="1" max="5" step="0.1" value="3" required></label><label data-methods="SIMP" hidden><span data-i18n="移动上限">移动上限</span><input id="moveLimit" type="number" min="0.01" max="0.5" step="0.01" value="0.2" required></label><label data-methods="level-set" hidden><span data-i18n="时间步长">时间步长</span><input id="timeStep" type="number" min="0.01" max="0.5" step="0.01" value="0.2" required></label><label data-methods="level-set" hidden><span data-i18n="边界平滑">边界平滑</span><input id="regularization" type="number" min="0" max="0.3" step="0.01" value="0.15" required></label><label><span data-i18n="最大迭代数">最大迭代数</span><input id="maxIter" type="number" min="1" max="300" value="100" required></label></div>
+          <div class="grid-fields"><label data-methods="BESO"><span data-i18n="删除方式">删除方式</span><select id="besoKill"><option value="soft">Soft kill</option><option value="hard">Hard kill</option></select></label><label data-methods="BESO" id="addition-label"><span data-i18n="最大加入率 (%)">最大加入率 (%)</span><input id="additionRatio" type="number" min="0" max="20" step="0.1" value="1" required></label><label data-methods="BESO" id="load-pad-label"><span data-i18n="固定加载区">固定加载区</span><input id="protectLoad" type="checkbox" checked></label><label data-methods="BESO ESO level-set"><span data-i18n="演化率 ER (%)">演化率 ER (%)</span><input id="er" type="number" min="0.1" max="20" step="0.1" value="2" required></label><label><span data-i18n="滤波半径 r">滤波半径 r</span><input id="radius" type="number" min="1" max="8" step="0.1" value="3" required></label><label data-methods="BESO ESO SIMP"><span data-i18n="惩罚指数 p">惩罚指数 p</span><input id="penalty" type="number" min="1" max="5" step="0.1" value="3" required></label><label data-methods="SIMP" hidden><span data-i18n="移动上限">移动上限</span><input id="moveLimit" type="number" min="0.01" max="0.5" step="0.01" value="0.2" required></label><label data-methods="level-set" hidden><span data-i18n="时间步长">时间步长</span><input id="timeStep" type="number" min="0.01" max="0.5" step="0.01" value="0.2" required></label><label data-methods="level-set" hidden><span data-i18n="边界平滑">边界平滑</span><input id="regularization" type="number" min="0" max="0.3" step="0.01" value="0.15" required></label><label><span data-i18n="最大迭代数">最大迭代数</span><input id="maxIter" type="number" min="1" max="300" value="100" required></label></div>
           <p class="hint"><span data-i18n="滤波半径以单元边长为单位。">滤波半径以单元边长为单位。</span></p>
         </section>
         <section id="material-panel" class="parameter-panel" hidden>
@@ -67,7 +67,7 @@
     </div>
     <div class="metrics">
       <div><span><span data-i18n="迭代步">迭代步</span></span><strong id="iteration">000</strong><small id="iteration-cap">/ 100</small></div>
-      <div><span><span data-i18n="应变能 C">应变能 C</span></span><strong id="compliance">—</strong></div>
+      <div><span><span data-i18n="柔度 C">柔度 C</span></span><strong id="compliance">—</strong></div>
       <div><span><span data-i18n="体积分数">体积分数</span></span><strong id="volume">100.0<em>%</em></strong><small id="target-label"></small></div>
       <div><span><span data-i18n="变化率 Δ">变化率 Δ</span></span><strong id="delta">—</strong><small><span data-i18n="阈值 0.001">阈值 0.001</span></small></div>
     </div>
@@ -88,12 +88,12 @@
   <div class="run-actions"><button id="pause" disabled><span data-i18n="暂停">暂停</span></button><button id="step" disabled><span data-i18n="单步">单步</span></button><button id="stop" disabled><span data-i18n="停止">停止</span></button></div>
   <div class="credits">Developed by <a href="https://albertlidesign.com" target="_blank" rel="noopener noreferrer">Zhi Li</a></div>
 </div>
-<dialog id="reading-dialog"><div class="dialog-heading"><h3><span data-i18n="如何读图">如何读图</span></h3><form method="dialog"><button data-i18n="关闭">关闭</button></form></div><p><span data-i18n="材料分布为本步更新后的结果；应变能与敏度来自更新前的分析。">材料分布为本步更新后的结果；应变能与敏度来自更新前的分析。</span></p><p><span data-i18n="左轴为 C，右轴为体积分数。">左轴为 C，右轴为体积分数。</span></p><p><span data-i18n="采用线弹性、小变形模型。">采用线弹性、小变形模型。</span></p></dialog>
+<dialog id="reading-dialog"><div class="dialog-heading"><h3><span data-i18n="如何读图">如何读图</span></h3><form method="dialog"><button data-i18n="关闭">关闭</button></form></div><p><span data-i18n="柔度与体积分数对应当前显示的结构；敏度场用于生成本步更新。">柔度与体积分数对应当前显示的结构；敏度场用于生成本步更新。</span></p><p><span data-i18n="左轴为 C，右轴为体积分数。">左轴为 C，右轴为体积分数。</span></p><p><span data-i18n="采用线弹性、小变形模型。">采用线弹性、小变形模型。</span></p></dialog>
 <section id="tutorial" aria-label="Topology optimization tutorial" hidden>
   <nav id="lesson-nav" aria-label="Tutorial chapters"></nav>
   <article id="lesson-content" tabindex="0"></article>
   <div class="lesson-controls"><button id="lesson-prev" type="button">←</button><span id="lesson-page"></span><button id="lesson-next" type="button">→</button></div>
 </section>
-<script src="app.js?v=11" type="module"></script>
+<script src="app.js?v=12" type="module"></script>
 </body>
 </html>

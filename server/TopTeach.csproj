@@ -13,6 +13,7 @@
     <Content Update="provenance.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="../tests/reference-cantilever-80x50.txt" Link="fixtures/reference-cantilever-80x50.txt"
              CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="../tests/reference/simp-independent.json" Link="fixtures/simp-independent.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="../tests/baselines/*.json" Link="fixtures/baselines/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
   <Target Name="CheckNativeSolver" BeforeTargets="BeforeBuild">

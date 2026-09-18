@@ -1,5 +1,9 @@
 // UI language is independent of model settings and exported numerical data.
 const english = {
+  "最大加入率 (%)": "Max. addition (%)",
+  "固定加载区": "Solid load pad",
+  "单元边长 h": "Element size h",
+  "柔度与体积分数对应当前显示的结构；敏度场用于生成本步更新。": "Compliance and volume match the displayed structure; the sensitivity field drove this update.",
   "恢复默认": "Reset defaults",
   "计算维度": "Model dimension",
   "2D 平面": "2D Plane",
@@ -66,13 +70,12 @@ const english = {
   "厚度 Nz": "Depth Nz",
   "优化": "Optimization",
   "开始优化": "Start",
-  "应变能 C": "Strain energy C",
+  "柔度 C": "Compliance C",
   "体积分数": "Volume fraction",
   "变化率 Δ": "Change Δ",
   "如何读图": "Reading the results",
   "导出结果": "Export results",
   "左端固定，载荷作用于右端。": "Left end fixed; load applied at the right end.",
-  "材料分布为本步更新后的结果；应变能与敏度来自更新前的分析。": "Material shows the updated design. Energy and sensitivity are calculated before the update.",
   "左轴为 C，右轴为体积分数。": "C uses the left axis; volume fraction uses the right axis.",
   "采用线弹性、小变形模型。": "Linear elasticity with small deformations.",
   "计算结果": "Results",
@@ -92,7 +95,7 @@ const english = {
 };
 let language = 'zh';
 try { language = localStorage.getItem('beso-language') === 'en' ? 'en' : 'zh'; } catch {}
-const chinese = {'开始优化后显示真实迭代记录':'运行优化后显示曲线','Cantilever':'悬臂梁','正在连接计算核心':'连接中…','原生计算核心已连接':'已连接','计算服务未连接':'未连接','计算任务进行中':'优化中…','Q4 · 平面应力':'平面应力','H8 · 拖拽旋转 / 滚轮缩放':'拖拽旋转 · 滚轮缩放'};
+const chinese = {'Hard-kill design disconnects a load.':'Hard kill 结构已失去载荷到支撑的连接。','The stiffness matrix is singular or indefinite. Check disconnected material, mechanisms, supports and filter radius.':'刚度矩阵奇异或非正定。请检查断开的材料、机构、支撑和滤波半径。','开始优化后显示真实迭代记录':'运行优化后显示曲线','Cantilever':'悬臂梁','正在连接计算核心':'连接中…','原生计算核心已连接':'已连接','计算服务未连接':'未连接','计算任务进行中':'优化中…','Q4 · 平面应力':'平面应力','H8 · 拖拽旋转 / 滚轮缩放':'拖拽旋转 · 滚轮缩放'};
 export const t = text => language === 'en' ? (english[text] ?? text) : (chinese[text] ?? text);
 export const locale = () => language === 'en' ? 'en-US' : 'zh-CN';
 export function meshText(count, dim) {

@@ -29,7 +29,7 @@ for dim in [2,3]:
         if method=='ESO':
             for a,b in zip(frames,frames[1:]):assert all(y<=x for x,y in zip(a['density'],b['density']))
         reports.append(dict(dim=dim,method=method,state=result['state'],frames=len(frames),passed=True))
-for invalid in [dict(method='wrong'),dict(besoKill='wrong'),dict(moveLimit=0),dict(timeStep=1),dict(regularization=-1)]:
+for invalid in [dict(method='wrong'),dict(besoKill='wrong'),dict(elementSize=0),dict(additionRatio=.3),dict(moveLimit=0),dict(timeStep=1),dict(regularization=-1)]:
     try:req('/api/runs',invalid);raise AssertionError('Invalid parameters accepted')
     except urllib.error.HTTPError as e:assert e.code==400
 report=dict(passed=True,reports=reports)

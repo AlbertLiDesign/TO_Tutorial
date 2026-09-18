@@ -20,7 +20,7 @@ public sealed class LevelSetOptimizer : IterativeOptimizer
     public override void Initialize()
     {
         base.Initialize();nx=settings.Nx;ny=settings.Ny;nz=settings.Dim==3?settings.Nz:1;
-        points=Model.Elements.Select(e=>new[]{e.Nodes.Average(n=>n.Position.X),e.Nodes.Average(n=>n.Position.Y),e.Nodes.Average(n=>n.Position.Z)}).ToArray();
+        points=Model.Elements.Select(e=>new[]{e.Nodes.Average(n=>n.Position.X)/settings.ElementSize,e.Nodes.Average(n=>n.Position.Y)/settings.ElementSize,e.Nodes.Average(n=>n.Position.Z)/settings.ElementSize}).ToArray();
         // Seed through-holes in 3D too; subsequent velocity and transport are fully 3D.
         // Shape-only level sets cannot nucleate holes from an everywhere-solid field.
         double spacing=Math.Max(5,Math.Min(nx,ny)/4.0),radius=spacing*.28;
