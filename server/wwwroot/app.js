@@ -1,6 +1,6 @@
-import './tutorial.js?v=12';
-import {showPane} from './layout.js?v=12';
-import {t, meshText, applyLanguage, toggleLanguage} from './i18n.js?v=12';
+import './tutorial.js?v=13';
+import {showPane} from './layout.js?v=13';
+import {t, meshText, applyLanguage, toggleLanguage} from './i18n.js?v=13';
 const $=s=>document.querySelector(s), fields=['additionRatio','elementSize','nx','ny','nz','vf','er','radius','penalty','maxIter','young','nu','force','loadY','moveLimit','timeStep','regularization'];
 let dim=2,runId=null,frames=[],current=-1,state='ready',running=false,sensitivity=false,follow=true,pollTimer=null,requesting=false,polling=false;
 let activeSettings=null,angle=-.55,pitch=.35,zoom=1,drag=null;

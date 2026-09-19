@@ -1,5 +1,5 @@
-import {locale} from './i18n.js?v=12';
-import {lessons} from './textbook.js?v=12';
+import {locale} from './i18n.js?v=13';
+import {lessons} from './textbook.js?v=13';
 
 let chapter=0;
 function renderLesson(){
@@ -7,7 +7,31 @@ function renderLesson(){
   document.querySelector('#lesson-nav').innerHTML=lessons.map((lesson,i)=>`<button type="button" data-lesson="${i}" class="${chapter===i?'selected':''}" aria-pressed="${chapter===i}"><span>${String(i+1).padStart(2,'0')}</span>${lesson[lang][0]}</button>`).join('');
   const lesson=lessons[chapter][lang];
   document.querySelector('#lesson-content').innerHTML=`<h1>${lesson[1]}</h1>${lesson[2]}<a class="try-app" href="#app">${lang==='en'?'Open App →':'打开 App →'}</a>`;
-  document.querySelector('#lesson-content').scrollTop=0;
+  const article=document.querySelector('#lesson-content');
+  const meta=document.createElement('p');meta.className='chapter-meta';
+  meta.textContent=lang==='en'?'TOP LAB / THEORY · Zhi Li':'TOP LAB / 理论 · Zhi Li';article.prepend(meta);
+  // Number only technical sections, leaving abstracts and reference lists unnumbered.
+  let section=0;
+  article.querySelectorAll(':scope > h2').forEach(heading=>{heading.textContent=`${chapter+1}.${++section}  ${heading.textContent}`;});
+  article.querySelectorAll('.theory-equation').forEach((equation,i)=>{
+    const body=document.createElement('div');body.className='equation-body';
+    while(equation.firstChild)body.append(equation.firstChild);
+    const number=document.createElement('span');number.className='equation-number';number.textContent=`(${chapter+1}.${i+1})`;
+    equation.append(body,number);
+  });
+  article.querySelectorAll('figure').forEach((fig,i)=>{
+    const caption=fig.querySelector('figcaption');const label=document.createElement('strong');
+    label.textContent=`${lang==='en'?'Figure':'图'} ${chapter+1}.${i+1}. `;caption.prepend(label);
+  });
+  const sources=[...article.querySelectorAll('.chapter-source')];
+  if(sources.length){
+    const references=document.createElement('section');references.className='chapter-references';
+    const heading=document.createElement('h2');heading.textContent=lang==='en'?'References':'参考文献';references.append(heading);
+    const list=document.createElement('ol');const seen=new Set();
+    sources.forEach(source=>{const link=source.querySelector('a');if(!seen.has(link.href)){seen.add(link.href);const item=document.createElement('li');item.append(link);list.append(item);}source.remove();});
+    references.append(list);article.querySelector('.try-app').before(references);
+  }
+  article.scrollTop=0;
   document.querySelectorAll('[data-lesson]').forEach(button=>button.onclick=()=>{chapter=Number(button.dataset.lesson);renderLesson();});
   document.querySelector('#lesson-page').textContent=`${chapter+1} / ${lessons.length}`;
   document.querySelector('#lesson-prev').disabled=chapter===0;document.querySelector('#lesson-next').disabled=chapter===lessons.length-1;

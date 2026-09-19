@@ -71,3 +71,39 @@ body[data-section=tutorial]>main,body[data-section=tutorial]>.run-bar,body[data-
 @media(max-height:540px){.grid-fields select{height:24px;padding:0 5px}}
 #lesson-content h2{font-size:1.16rem;line-height:1.4;margin:1.5em 0 .55em;color:#37314c}#lesson-content h3{font-size:1rem;margin:0 0 .65em}#lesson-content p{max-width:78ch}#lesson-content sub,#lesson-content sup{font-size:.75em}.exercise{margin:1.6em 0;padding:1.2em 1.4em;border-left:3px solid #b2a7d1;background:#f7f5fb;border-radius:0 6px 6px 0}.exercise details{margin-top:.8em}.exercise summary{cursor:pointer;color:#595081;font-weight:600}.chapter-source{font-size:.84rem;color:#655b83}.theory-equation{overflow-x:auto;font-family:'STIX Two Math','Cambria Math',Georgia,serif;line-height:1.9;font-size:1.06rem}#lesson-nav{overflow-y:auto;min-height:0}#lesson-nav button{font-size:.84rem}
 .grid-fields input[type="checkbox"]{width:18px;height:18px;margin:8px 0;accent-color:#595081}
+
+/* Tutorial manuscript: readable measure, numbered equations and original figures. */
+#tutorial{max-width:1380px;grid-template-columns:210px minmax(0,1fr);gap:20px}
+#lesson-content{padding:clamp(24px,4vw,56px);font-size:15px;line-height:1.9;scrollbar-gutter:stable;scroll-behavior:smooth}
+#lesson-content h1{font-family:Georgia,'Noto Serif SC','Songti SC',serif;font-weight:600;font-size:clamp(24px,2.6vw,34px);line-height:1.4;letter-spacing:-.025em;margin:10px 0 24px;max-width:32em}
+#lesson-content p{max-width:none;margin:1em 0;text-wrap:pretty}
+#lesson-content .chapter-meta{font-size:10px;letter-spacing:.15em;color:var(--muted);margin:0;text-transform:uppercase}
+.chapter-abstract{border-top:1px solid #c9c1d8;border-bottom:1px solid #ddd6e8;padding:17px 0 20px;margin-bottom:28px}
+#lesson-content .chapter-abstract h2{font-size:12px;letter-spacing:.08em;margin:0 0 7px;text-transform:uppercase}
+#lesson-content .chapter-abstract p{font-size:14px;line-height:1.85;margin:0;color:#585264}
+#lesson-content>h2{font-size:18px;line-height:1.55;margin:32px 0 12px;font-weight:650}
+.theory-equation{display:flex;align-items:center;gap:18px;padding:17px 0;background:transparent;border:0;border-top:1px solid #efecf4;border-bottom:1px solid #efecf4;margin:18px 0;overflow:visible;line-height:1.9}
+.equation-body{flex:1;min-width:0;overflow-x:auto;overflow-wrap:normal;padding:3px 0;font-size:18px}
+.equation-number{flex:none;color:#7e768d;font:12px system-ui,sans-serif}
+.theory-figure{margin:28px 0 32px;padding:20px 20px 0;border:1px solid #e4deec;border-radius:4px;background:#fdfcfe}
+.theory-figure svg{display:block;width:100%;height:auto;max-height:350px;margin:auto}
+.theory-figure figcaption{font-size:12px;line-height:1.8;color:#655e73;border-top:1px solid #e8e2ef;margin-top:14px;padding:14px 0 18px}
+.theory-figure figcaption strong{color:#42394f}
+.theory-note{border-left:2px solid #ada0c8;padding:4px 0 4px 20px;margin:24px 0}
+#lesson-content .theory-note h3{font-size:14px;margin:0;font-weight:650}
+#lesson-content .theory-note p{font-size:13px;color:#5e566b;margin:6px 0}
+.theory-table{overflow-x:auto;margin:22px 0}
+#lesson-content th{background:#f5f2f9;font-weight:600}
+#lesson-content td:first-child{white-space:normal;min-width:90px}
+#lesson-content td,#lesson-content th{font-size:13px;line-height:1.75}
+.exercise{background:#faf8fc;border:1px solid #e5dfed;border-left:2px solid #aea1c8;border-radius:0;padding:20px 24px}
+#lesson-content .exercise h3{font-size:13px;letter-spacing:.04em}
+#lesson-content .exercise p{font-size:14px}
+.chapter-references{margin-top:36px;padding-top:8px;border-top:1px solid #cbc2d9}
+#lesson-content .chapter-references h2{font-size:15px;margin:15px 0}
+.chapter-references ol{padding-left:24px}
+#lesson-content .chapter-references li{font-size:12px;line-height:1.75;padding-left:5px;margin:12px 0}
+.chapter-references a{text-decoration:none}.chapter-references a:hover{text-decoration:underline}
+@media(max-width:900px){#tutorial{grid-template-columns:180px minmax(0,1fr);gap:12px;padding:16px}#lesson-content{padding:24px;font-size:14px}.theory-figure{padding:12px 12px 0}}
+@media(max-width:700px){#tutorial{grid-template-columns:1fr;padding:10px}#lesson-nav{max-height:min(180px,26vh)}#lesson-content{padding:20px;font-size:14px}#lesson-content h1{font-size:23px}#lesson-content>h2{font-size:17px}.equation-body{font-size:16px}.theory-equation{gap:10px}.theory-figure{padding:7px 7px 0}.theory-figure figcaption{font-size:11px}.chapter-abstract{margin-bottom:20px}}
+@media print{body[data-section=tutorial]{display:block;height:auto;overflow:visible}body[data-section=tutorial]>header,#lesson-nav,.lesson-controls,.try-app{display:none!important}#tutorial{display:block;padding:0;max-width:none}#lesson-content{overflow:visible;border:0;padding:0;font-size:11pt}.theory-figure,.theory-equation,.theory-note{break-inside:avoid}.theory-figure svg{max-height:240px}}

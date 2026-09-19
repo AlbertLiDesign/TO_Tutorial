@@ -2,7 +2,7 @@
 
 Learn and explore 2D and 3D topology optimization in English or Chinese.
 
-**Tutorial** is a 12-chapter bilingual course with derivations and worked exercises. **App** lets you compare SIMP, BESO, ESO, and level set on the same cantilever.
+**Tutorial** is a 12-chapter bilingual text with mathematical derivations, illustrated explanations, worked examples, and references. **App** lets you compare SIMP, BESO, ESO, and level set on the same cantilever.
 
 The default example is an **80 × 50 cantilever** in 2D, or **80 × 50 × 4** in 3D, fixed at the left end with a downward load at the midpoint of the right end.
 
