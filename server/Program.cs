@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
+if(args.Contains("--teaching-examples")){TeachingExamples.Run();return;}
 if(args.Contains("--verify-methods")){MethodVerification.Run();return;}
 if(args.Contains("--verify-elements")){Tutorial.Fem.ElementVerification.Run();return;}
 if(args.Contains("--verify-spatial")){SpatialVerification.Run();return;}

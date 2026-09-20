@@ -1,4 +1,5 @@
-import {figure} from './theory-figures.js?v=13';
+import {figure} from './theory-figures.js?v=14';
+import {practical} from './teaching-practical.js?v=14';
 // Original bilingual teaching text. Equations use fixed, design-independent loads.
 const p=s=>`<p>${s}</p>`, h=s=>`<h2>${s}</h2>`, eq=s=>`<div class="theory-equation" role="math">${s}</div>`;
 const exercise=(q,a,zh=false)=>`<section class="exercise"><h3>${zh?'分析例题':'Analytical example'}</h3><p>${q}</p><details><summary>${zh?'展开推导与讨论':'Derivation and discussion'}</summary><p>${a}</p></details></section>`;
@@ -12,37 +13,39 @@ const chapters=[
  h('尺寸、形状与拓扑')+p('尺寸优化调整截面或厚度；形状优化移动已有边界；拓扑优化还允许连接关系和孔洞数量改变。给定设计域 D、固定边界、载荷及材料模型后，设计变量描述材料的空间分布，位移则由平衡方程决定。')+
  eq('min<sub>ρ</sub> C(ρ) &nbsp; s.t. &nbsp; K(ρ)u = f, &nbsp; Σ<sub>e</sub>v<sub>e</sub>ρ<sub>e</sub> ≤ V*, &nbsp; 0 ≤ ρ<sub>e</sub> ≤ 1')+
  p('ρ 是相对材料密度，vₑ 是单元体积，V* 是允许的材料体积。理想实体–空洞问题要求 ρ∈{0,1}；密度法先允许连续值，再通过材料插值抑制中间密度。体积分数 fᵥ=V*/|D| 与载荷向量 f 是不同量。')+
- h('模型假设与比较条件')+p('本教材研究固定载荷、线弹性、小变形下的最小柔度问题。它不等同于最小应力、最大屈曲载荷或最大强度。比较算法必须固定物理尺寸、支撑、载荷位置及总量、材料参数和体积预算。改变其中一项，就改变了优化问题。')+
+ h('模型假设与比较条件')+p('本教材面向已具备材料力学、线性代数及有限元基础的读者，研究固定载荷、线弹性、小变形下的最小柔度问题。它不等同于最小应力、最大屈曲载荷或最大强度。比较算法必须固定物理尺寸、支撑、载荷位置及总量、材料参数和体积预算。改变其中一项，就改变了优化问题。')+
  exercise('减少一半材料，柔度一定也减半吗？','不会。在固定载荷下，去掉材料通常会降低刚度、增大柔度；优化是在有限材料中改善分布，并不能取消这个代价。',true)+book],
  en:['Problem & variables','1 · Volume-constrained structural topology optimization',
  h('Sizing, shape and topology')+p('Sizing changes sections or thicknesses. Shape optimization moves existing boundaries. Topology optimization also permits changes in connectivity and holes. The design domain D, supports, loads and material law define the problem; displacements are state variables determined by equilibrium.')+
  eq('min<sub>ρ</sub> C(ρ) &nbsp; s.t. &nbsp; K(ρ)u = f, &nbsp; Σ<sub>e</sub>v<sub>e</sub>ρ<sub>e</sub> ≤ V*, &nbsp; 0 ≤ ρ<sub>e</sub> ≤ 1')+
  p('Here ρ is relative material density, vₑ is element volume and V* is the material budget. A solid–void problem uses ρ∈{0,1}; density methods relax this restriction and penalize intermediate material. The volume fraction fᵥ=V*/|D| is distinct from the load vector f.')+
- h('Model assumptions and comparison conditions')+p('We study minimum compliance with fixed loads, linear elasticity and small displacements. This is not a minimum-stress, buckling or strength problem. A fair comparison fixes physical dimensions, supports, load position and magnitude, material properties and volume budget. Changing any of them changes the optimization problem.')+
+ h('Model assumptions and comparison conditions')+p('This text assumes prior mechanics of materials, linear algebra and finite-element fundamentals. We study minimum compliance with fixed loads, linear elasticity and small displacements. This is not a minimum-stress, buckling or strength problem. A fair comparison fixes physical dimensions, supports, load position and magnitude, material properties and volume budget. Changing any of them changes the optimization problem.')+
  exercise('Does halving material necessarily halve compliance?','No. Removing stiffness generally increases compliance under fixed loads. Optimization improves material placement within a budget; it does not remove that tradeoff.')+book]},
 {zh:['线弹性与边界条件','2 · 线弹性状态方程及变分形式',
- eq('ε(u) = ½(∇u + ∇uᵀ), &nbsp; σ = Dε, &nbsp; −div σ = b')+
- p('ε 为小应变，σ 为应力，D 为弹性矩阵，b 为体力。在位移边界 Γᴅ 上给定位移，在力边界 Γɴ 上给定表面力。固定约束必须消除刚体运动，否则平衡解不唯一。当前 App 使用零位移约束及节点力，不包含体力或随设计变化的载荷。')+
+ eq('ε(u) = ½(∇u + ∇uᵀ), &nbsp; σ = 𝔻:ε(u), &nbsp; −div σ = b')+
+ p('ε 为二阶小应变张量，σ 为二阶应力张量，𝔻 为四阶弹性张量，b 为体力。在位移边界 Γᴅ 上给定位移，在力边界 Γɴ 上给定表面力。固定约束必须消除刚体运动，否则平衡解不唯一。当前 App 使用零位移约束及节点力，不包含体力或随设计变化的载荷。')+
  h('二维本构假设')+p('平面应力假设 σzz=τxz=τyz=0，适合薄板的面内受力；平面应变假设 εzz=γxz=γyz=0，适合受约束的长结构截面。两者使用不同的本构矩阵。App 的 Q4 是单位厚度平面应力，H8 是三维弹性。')+
- eq('D<sub>plane stress</sub> = E/(1−ν²) · [[1, ν, 0], [ν, 1, 0], [0, 0, (1−ν)/2]]')+
- h('弱形式')+p('对满足齐次位移边界的任意试函数 v，平衡条件为 ∫Ω ε(v):D:ε(u) dΩ = ∫Ω v·b dΩ + ∫Γɴ v·t dΓ。有限元把这个连续问题限制在有限维位移空间内。')+
+ eq('σ<sub>V</sub>=D<sub>ps</sub>ε<sub>V</sub>, &nbsp; ε<sub>V</sub>=[εxx, εyy, 2εxy]ᵀ, &nbsp; σ<sub>V</sub>=[σxx, σyy, σxy]ᵀ')+
+ eq('D<sub>ps</sub> = E/(1−ν²) · [[1, ν, 0], [ν, 1, 0], [0, 0, (1−ν)/2]]')+
+ h('弱形式')+p('对满足齐次位移边界的任意试函数 v，平衡条件为 ∫Ω ε(v):𝔻:ε(u) dΩ = ∫Ω v·b dΩ + ∫Γɴ v·t dΓ。有限元把这个连续问题限制在有限维位移空间内。')+
  exercise('二维图像相同，是否意味着 Q4 与一层 H8 的结果完全相同？','不意味着。单位厚度、厚度方向约束、载荷分布及三维泊松效应均可能不同。必须先匹配物理模型。',true)+book],
  en:['Elasticity & boundaries','2 · Linear elasticity and its variational formulation',
- eq('ε(u) = ½(∇u + ∇uᵀ), &nbsp; σ = Dε, &nbsp; −div σ = b')+
- p('Small strain ε, stress σ, elasticity tensor D and body force b describe equilibrium. Prescribe displacement on Γᴅ and traction on Γɴ. Supports must eliminate rigid-body motion. App uses homogeneous displacement constraints and nodal forces; body forces and design-dependent loads are outside this model.')+
+ eq('ε(u) = ½(∇u + ∇uᵀ), &nbsp; σ = 𝔻:ε(u), &nbsp; −div σ = b')+
+ p('The second-order strain tensor ε, stress tensor σ, fourth-order elasticity tensor 𝔻 and body force b describe equilibrium. Prescribe displacement on Γᴅ and traction on Γɴ. Supports must eliminate rigid-body motion. App uses homogeneous displacement constraints and nodal forces; body forces and design-dependent loads are outside this model.')+
  h('Constitutive assumptions in two dimensions')+p('Plane stress sets σzz=τxz=τyz=0 for thin plates loaded in their plane. Plane strain sets εzz=γxz=γyz=0 for constrained long sections. Their constitutive matrices differ. App uses unit-thickness plane-stress Q4 elements and three-dimensional H8 elements.')+
- eq('D<sub>plane stress</sub> = E/(1−ν²) · [[1, ν, 0], [ν, 1, 0], [0, 0, (1−ν)/2]]')+
- h('Weak equilibrium')+p('For every admissible test displacement v, ∫Ω ε(v):D:ε(u) dΩ = ∫Ω v·b dΩ + ∫Γɴ v·t dΓ. Finite elements restrict this statement to a finite-dimensional displacement space.')+
+ eq('σ<sub>V</sub>=D<sub>ps</sub>ε<sub>V</sub>, &nbsp; ε<sub>V</sub>=[εxx, εyy, 2εxy]ᵀ, &nbsp; σ<sub>V</sub>=[σxx, σyy, σxy]ᵀ')+
+ eq('D<sub>ps</sub> = E/(1−ν²) · [[1, ν, 0], [ν, 1, 0], [0, 0, (1−ν)/2]]')+
+ h('Weak equilibrium')+p('For every admissible test displacement v, ∫Ω ε(v):𝔻:ε(u) dΩ = ∫Ω v·b dΩ + ∫Γɴ v·t dΓ. Finite elements restrict this statement to a finite-dimensional displacement space.')+
  exercise('Must a Q4 plate and one layer of H8 elements give identical results?','No. Thickness, transverse constraints, load distribution and three-dimensional Poisson effects must first be matched.')+book]},
 {zh:['有限元离散','3 · 等参有限元离散与刚度装配',
- eq('u ≈ N u<sub>e</sub>, &nbsp; ε = B u<sub>e</sub>, &nbsp; k<sub>e</sub> = ∫Ωₑ BᵀDB dΩ')+
+ eq('u ≈ N u<sub>e</sub>, &nbsp; ε<sub>V</sub> = B u<sub>e</sub>, &nbsp; k<sub>e</sub> = ∫Ωₑ BᵀDB dΩ')+
  p('Q4 使用双线性形函数，H8 使用三线性形函数。形函数在参考单元上定义，通过雅可比矩阵映射到物理单元。数值积分计算单元刚度，再按共享节点的自由度编号装配整体矩阵。单元朝向错误或雅可比退化会破坏分析。')+
  eq('K = Σ<sub>e</sub> A<sub>e</sub>ᵀ k<sub>e</sub> A<sub>e</sub>, &nbsp; K<sub>ff</sub>u<sub>f</sub> = f<sub>f</sub> − K<sub>fc</sub>u<sub>c</sub>')+
  p('Aₑ 是自由度装配映射，下标 f/c 分别表示自由与约束自由度。这里的固定端满足 u𝚌=0。Hard kill 还必须删除没有实体单元连接的空节点自由度；仅把这些节点留在矩阵中会产生零行。即使移除了零行，悬空实体或铰接机构仍可导致奇异矩阵。')+
  h('有限元分析的验证条件')+p('必要检查包括刚度对称性、刚体运动零能量、常应变补片试验、平衡残差，以及外功与应变能的一致性。优化图案合理不能替代这些检查。')+
  exercise('若所有单元都是实体，但结构没有任何支撑，增大 E 能否消除奇异性？','不能。刚体运动不产生应变，因而对应的零能量模态不会随 E 增大而消失。',true)+book],
  en:['Finite elements','3 · Isoparametric finite elements and stiffness assembly',
- eq('u ≈ N u<sub>e</sub>, &nbsp; ε = B u<sub>e</sub>, &nbsp; k<sub>e</sub> = ∫Ωₑ BᵀDB dΩ')+
+ eq('u ≈ N u<sub>e</sub>, &nbsp; ε<sub>V</sub> = B u<sub>e</sub>, &nbsp; k<sub>e</sub> = ∫Ωₑ BᵀDB dΩ')+
  p('Q4 uses bilinear shape functions; H8 uses trilinear ones. A Jacobian maps reference-element derivatives to physical coordinates. Numerical quadrature gives element stiffness, and shared-node degree-of-freedom maps assemble the global system. Inverted or degenerate elements invalidate the analysis.')+
  eq('K = Σ<sub>e</sub> A<sub>e</sub>ᵀ k<sub>e</sub> A<sub>e</sub>, &nbsp; K<sub>ff</sub>u<sub>f</sub> = f<sub>f</sub> − K<sub>fc</sub>u<sub>c</sub>')+
  p('Aₑ maps global to element displacements; f/c denote free/constrained DOFs. Fixed supports have u𝚌=0. Hard kill also removes DOFs attached only to void elements. Removing zero rows does not cure floating solid components or mechanisms: those can still make K singular.')+
@@ -95,15 +98,15 @@ const chapters=[
 {zh:['ESO：单向演化','7 · 单向演化法的删除准则与不可逆性',
  p('ESO 逐步删除低效材料，已删除材料不再恢复。原始应力型 ESO 以单元 von Mises 应力与当前最大应力之比作删除判断；达到稳定状态后提高拒绝比。它不是与体积受限柔度最小化完全相同的数学问题。')+
  eq('原始应力准则：σ<sub>VM,e</sub>/σ<sub>VM,max</sub> < RR')+
- h('本文采用的离散变体')+p('App 采用应变能准则的单向 ESO：在现有实体中，按滤波后的能量敏度从低到高删除，直到达到本步体积。为保留稳定的分析域，空单元保留弱刚度。这是柔度问题的能量型 ESO，不宣称复现原始应力拒绝比算法。')+
- eq('V<sub>k+1</sub> = max(V*, (1−ER)V<sub>k</sub>), &nbsp; α<sub>e</sub> ∝ u<sub>e</sub>ᵀk<sub>e</sub>⁰u<sub>e</sub>')+
+ h('本文采用的离散变体')+p('App 采用应变能准则的单向 ESO：先对包含弱材料的全域计算原始敏度，再做 α̂=Wα；仅在现有实体中按 α̂ 从低到高删除，直到达到本步体积。空单元的 ρᵖ⁻¹ 因子不能在滤波前省略。为保留带残余刚度的分析域，空单元保留弱刚度。这是柔度问题的能量型 ESO，不宣称复现原始应力拒绝比算法。')+
+ eq('V<sub>k+1</sub> = max(V*, (1−ER)V<sub>k</sub>), &nbsp; α<sub>e</sub> ∝ ρ<sub>e</sub><sup>p−1</sup>u<sub>e</sub>ᵀk<sub>e</sub>⁰u<sub>e</sub>, &nbsp; α̂=Wα')+
  p('逐个单元删除使体积只能按离散增量改变；实现采用不低于目标的舍入。删除后的单元不参加恢复竞争，因此早期错误决策不能被后续加回修复。到达体积预算是一种停止条件，不是全局最优的证明。')+
  exercise('ESO 与 BESO 都得到 50% 体积，是否应有相同形态？','不应如此要求。BESO 可以加回材料，ESO 不可以；更新历史、筛选准则与局部最优可能不同。',true)+source('https://doi.org/10.1016/0045-7949(93)90035-C','Xie, Y. M., & Steven, G. P. (1993). A simple evolutionary procedure for structural optimization. Computers & Structures, 49, 885–896.')+source('https://doi.org/10.1016/S0045-7825(02)00464-4','Tanskanen, P. (2002). The evolutionary structural optimization method: theoretical aspects. Computer Methods in Applied Mechanics and Engineering, 191, 5485–5498.')],
  en:['ESO: one-way evolution','7 · Removal criteria and irreversibility in ESO',
  p('ESO progressively removes inefficient material without restoring it. Original stress-based ESO compares each element’s von Mises stress with the current maximum; the rejection ratio rises after a steady state. This is not the same mathematical formulation as volume-constrained compliance minimization.')+
  eq('Original stress criterion: σ<sub>VM,e</sub>/σ<sub>VM,max</sub> < RR')+
- h('Discrete variant used in this application')+p('App uses strain-energy-based, one-way ESO: rank existing solid elements by filtered energy sensitivity and remove the lowest until the scheduled volume is reached. A weak phase retains the analysis domain. This is energy-based ESO for the compliance problem, not a reproduction of the original stress-rejection algorithm.')+
- eq('V<sub>k+1</sub> = max(V*, (1−ER)V<sub>k</sub>), &nbsp; α<sub>e</sub> ∝ u<sub>e</sub>ᵀk<sub>e</sub>⁰u<sub>e</sub>')+
+ h('Discrete variant used in this application')+p('App uses strain-energy-based, one-way ESO: compute raw scores over the entire domain, including weak material, apply α̂=Wα, then remove the lowest-ranked existing solids until the scheduled volume is reached. The weak-phase factor ρᵖ⁻¹ must not be omitted before filtering. A weak phase retains the analysis domain. This is energy-based ESO for the compliance problem, not a reproduction of the original stress-rejection algorithm.')+
+ eq('V<sub>k+1</sub> = max(V*, (1−ER)V<sub>k</sub>), &nbsp; α<sub>e</sub> ∝ ρ<sub>e</sub><sup>p−1</sup>u<sub>e</sub>ᵀk<sub>e</sub>⁰u<sub>e</sub>, &nbsp; α̂=Wα')+
  p('Whole-element removal quantizes volume, which is rounded upward to the budget. Removed elements do not compete for reintroduction, so a premature removal cannot be repaired by adding material back. Reaching the budget is a stopping rule, not a global-optimality certificate.')+
  exercise('Should ESO and BESO produce identical shapes at 50% volume?','No. Their admissible updates differ: BESO can restore material. Removal criteria, history and local optima also matter.')+source('https://doi.org/10.1016/0045-7949(93)90035-C','Xie, Y. M., & Steven, G. P. (1993). A simple evolutionary procedure for structural optimization. Computers & Structures, 49, 885–896.')+source('https://doi.org/10.1016/S0045-7825(02)00464-4','Tanskanen, P. (2002). The evolutionary structural optimization method: theoretical aspects. Computer Methods in Applied Mechanics and Engineering, 191, 5485–5498.')]},
 {zh:['BESO：双向演化','8 · 双向演化法的敏度估计与材料恢复',
@@ -151,15 +154,15 @@ const chapters=[
  h('A hierarchy of evidence')+p('Analytic patch and scaling tests check mechanics. Independent assembly and solvers check implementation. Stepwise trajectories check a particular algorithm. Mesh studies check discretization dependence. Experiments check the physical model. One level cannot replace the others; project validation notes identify implemented checks and remaining literature-reproduction gaps.')+
  exercise('Can a run that reached its iteration cap be reported as a converged optimum?','No. Report iterations, volume error, objective changes and stopping reason; call it the current iterate.')+book]},
 {zh:['悬臂梁实验','11 · 悬臂梁算例与可重复性协议',
- h('实验 A：验证尺度律')+p('先固定一个设计，令载荷从 −1 改为 −2，验证 C 约为原来的 4 倍；再将 E 从 1 改为 2，验证 C 减半。应保持相同设计进行力学对照，而不是任意比较两次尚未收敛的优化。')+
+ h('实验 A：验证尺度律')+p('使用本章配套命令固定全实体设计，令载荷从 −1 改为 −2，验证 C 为原来的 4 倍；再将 E 从 1 改为 2，验证 C 减半。命令只求解固定密度场，不运行优化。App 的 Start 会重新初始化优化，因此不用于本实验。')+
  h('实验 B：公平比较方法')+p('记录方法及变体、网格、h、r、材料、总载荷、加载位置、体积目标、停止条件与迭代上限。SIMP 从均匀密度开始，BESO/ESO 从实体开始，level set 从孔洞设计开始，因此起始 C 不应直接排名。比较最终 C 前先确认实际体积相同。')+
- h('实验 C：保持物理域的加密')+p('以 40×25、h=2、r=1.5 与 80×50、h=1、r=3 比较二维域 80×50。三维可用 40×25×2、h=2 与 80×50×4、h=1。总载荷保持不变，且加载位置相同；奇数网格的节点力应分配到相邻节点。')+
+ h('实验 C：离散网格敏感性（节点载荷）')+p('以 40×25、h=2、r=1.5 与 80×50、h=1、r=3 比较二维域 80×50。三维可用 40×25×2、h=2 与 80×50×4、h=1。总载荷保持不变，且加载位置相同；奇数网格在相邻节点间分配载荷。这只能检查当前离散模型的网格敏感性，不能据此宣称柔度收敛到非奇异连续体解。只有两个网格也不足以估计收敛阶。')+
  h('实验 D：区分显示和分析')+p('SIMP 的灰度不是实体/空洞制造图。对阈值化后的形态应重新分析，不能沿用连续密度的柔度。Level set 的过渡带和体素显示也有离散误差。记录导出的密度和求解设置，而不是只保留截图。')+
  exercise('把 80×50 改为 160×100，同时保持 h=1 和 r=3，算不算同一物理问题的网格收敛研究？','不算。物理尺寸加倍而物理滤波半径不变；三维厚度若未同步改变，还会改变长厚比。',true)],
  en:['Cantilever experiments','11 · Cantilever benchmarks and a reproducibility protocol',
- h('A: scaling laws')+p('For a fixed design, change force from −1 to −2: C should quadruple. Doubling E should halve C. Use the same design for this mechanics check, rather than comparing unrelated, unconverged optimization runs.')+
+ h('A: scaling laws')+p('Use the companion command below to hold a fully solid design fixed. Changing force from −1 to −2 must quadruple C; doubling E must halve C. The command solves a fixed density field without optimization. App Start reinitializes optimization and is not the workflow for this experiment.')+
  h('B: compare methods fairly')+p('Record the method variant, mesh, h, r, material, total load and position, volume target, stopping criteria and iteration budget. SIMP begins at uniform density, BESO/ESO begin solid and level set begins perforated. Initial C values are not a fair ranking. Match actual final volume before comparing final C.')+
- h('C: refine a fixed physical domain')+p('Compare 40×25, h=2, r=1.5 with 80×50, h=1, r=3 for the same 80×50 plane domain. In 3D use 40×25×2, h=2 and 80×50×4, h=1. Keep total load and its physical position unchanged; odd grids distribute force to adjacent nodes.')+
+ h('C: discrete mesh sensitivity with nodal loads')+p('Compare 40×25, h=2, r=1.5 with 80×50, h=1, r=3 for the same 80×50 plane domain. In 3D use 40×25×2, h=2 and 80×50×4, h=1. Keep the resultant and its position unchanged; odd grids split the force between adjacent nodes. This probes the discrete model’s mesh sensitivity, not convergence to a nonsingular continuum compliance. Two meshes alone also do not determine a convergence order.')+
  h('D: separate display from analysis')+p('SIMP gray density is not a manufactured solid–void part. Thresholding requires reanalysis; the continuous design’s compliance cannot be reused. Level-set transition bands and voxel views also have discretization errors. Export densities and settings, not only screenshots.')+
  exercise('Is changing 80×50 to 160×100 while keeping h=1 and r=3 a fixed-domain mesh study?','No. Physical dimensions double while physical filter radius stays fixed. Unchanged 3D thickness would additionally alter aspect ratios.')]},
 {zh:['方法对照与文献','12 · 方法比较、适用范围与参考文献',
@@ -191,12 +194,12 @@ const supplements=[
  h('位移空间与能量原理')+eq('𝒱 = {v ∈ H¹(Ω)ᵈ : v = 0 on Γᴅ}, &nbsp; a(u,v) = ℓ(v) &nbsp; ∀v∈𝒱')+
  eq('a(u,v)=∫Ω ε(v):𝔻:ε(u) dΩ, &nbsp; ℓ(v)=∫Ω b·v dΩ+∫Γɴ t·v dΓ')+
  p('这里 𝔻 为四阶弹性张量，D 为其 Voigt 矩阵表示（与作为集合的设计域 D 由上下文区分）。将强形式乘以试函数并分部积分，边界项中的 σn 由给定表面力 t 替代，即得弱形式。对齐次位移约束，平衡位移是总势能 Π(v)=a(v,v)/2−ℓ(v) 的驻点；在材料正定、约束消除刚体模态且区域具有适当正则性时，该驻点为唯一极小值。')+
- note('点载荷的连续与离散含义','理想集中力可能产生局部奇异应力；有限元节点力是离散载荷定义。严格的网格研究应说明是否采用固定物理范围的分布载荷，避免将点载荷奇异性引起的局部变化误认为算法不收敛。当前 App 使用节点力。')],
+ note('点载荷的连续与离散含义','理想集中力可能产生局部奇异应力；有限元节点力是离散载荷定义。集中力还使加载点位移及包含该位移的柔度具有奇异极限问题。当前 App 使用节点力，适合固定网格的算法比较；若研究有限的连续体柔度极限，应改用固定物理范围的分布载荷，并保持加载区域和总力不变。')],
  en:['Elasticity supplies the state solution required by optimization. The weak form specifies the displacement space, natural boundary conditions and constitutive assumptions on which subsequent sensitivity expressions depend.',
  h('Admissible displacements and the energy principle')+eq('𝒱 = {v ∈ H¹(Ω)ᵈ : v = 0 on Γᴅ}, &nbsp; a(u,v) = ℓ(v) &nbsp; ∀v∈𝒱')+
  eq('a(u,v)=∫Ω ε(v):𝔻:ε(u) dΩ, &nbsp; ℓ(v)=∫Ω b·v dΩ+∫Γɴ t·v dΓ')+
  p('The fourth-order elasticity tensor is denoted by 𝔻 and its Voigt matrix by D. Integration by parts transfers the equilibrium divergence onto the test function; the boundary term σn becomes the prescribed traction t. With homogeneous displacement constraints, equilibrium is stationary for Π(v)=a(v,v)/2−ℓ(v). Positive material stiffness, suitable domain regularity and supports that remove rigid modes make this stationary point the unique minimum.')+
- note('Concentrated loads','An ideal point force can generate a local stress singularity. A nodal force defines a discrete load. A mesh study should state whether loading is distributed over a fixed physical region, so singular-load effects are not mistaken for an optimization failure. The current App uses nodal loads.')]},
+ note('Concentrated loads','An ideal point force can generate a local stress singularity. A nodal force defines a discrete load. Loaded-point displacement, and compliance that includes it, also have a singular-limit issue. App uses nodal loads and supports fixed-mesh algorithm comparisons. Studying a finite continuum compliance limit requires a load distributed over a fixed physical region, with unchanged region and resultant.')]},
 {fig:'elements',
  zh:['使用 Q4 与 H8 等参单元离散位移场，以数值积分构造单元刚度，再施加位移约束求解整体平衡。材料更新改变刚度系数，但不改变固定分析网格。',
  h('参考单元上的插值与积分')+eq('Nₐ(ξ,η)=¼(1+ξₐξ)(1+ηₐη), &nbsp; (ξₐ,ηₐ)∈{−1,1}²')+
@@ -314,6 +317,7 @@ const supplements=[
 export const lessons=chapters.map((chapter,index)=>Object.fromEntries(['zh','en'].map(lang=>{
  const [title,heading,body]=chapter[lang], [abstract,addition]=supplements[index][lang];
  const insert=body.indexOf('<section class="exercise">');
- const expanded=insert<0?body+addition:body.slice(0,insert)+addition+body.slice(insert);
+ const material=addition+(practical[index]?.[lang]??'');
+ const expanded=insert<0?body+material:body.slice(0,insert)+material+body.slice(insert);
  return [lang,[title,heading,`<div class="chapter-abstract"><h2>${lang==='zh'?'摘要':'Abstract'}</h2>${p(abstract)}</div>${supplements[index].fig?figure(supplements[index].fig,lang):''}${expanded}`]];
 })));

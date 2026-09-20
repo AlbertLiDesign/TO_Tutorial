@@ -18,6 +18,7 @@ RUN dotnet restore server/TopTeach.csproj --locked-mode
 COPY server/ ./server/
 COPY tests/reference-cantilever-80x50.txt ./tests/
 COPY tests/baselines/ ./tests/baselines/
+COPY tests/reference/simp-independent.json ./tests/reference/
 COPY native/ ./native/
 COPY scripts/generate-provenance.py ./scripts/
 COPY --from=native /src/build/BesoNative.dll ./server/lib/BesoNative.dll

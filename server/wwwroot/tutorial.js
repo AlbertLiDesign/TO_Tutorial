@@ -1,5 +1,5 @@
-import {locale} from './i18n.js?v=13';
-import {lessons} from './textbook.js?v=13';
+import {locale} from './i18n.js?v=14';
+import {lessons} from './textbook.js?v=14';
 
 let chapter=0;
 function renderLesson(){

@@ -26,3 +26,7 @@ Acceptance tolerances and exercised settings are in `server/MethodVerification.c
 - Obtain independent technical review of both language versions of the Tutorial.
 
 The application implements identifiable classical formulations, but these tests do not justify “error-free,” “certified,” or universal reference-equivalence claims. The Tutorial makes that distinction explicit.
+
+## Executable Tutorial examples
+
+`dotnet server/bin/Release/net9.0/TopTeach.dll --teaching-examples` (after a Release build) solves a fixed fully solid 12×8 Q4 and 12×8×2 H8 cantilever, checking load and modulus scaling to 1e-8. It also checks the supplied-gradient OC example and the six-cell BESO ranking example. These local update exercises do not constitute a full optimization benchmark. Local and container verification scripts run this command.

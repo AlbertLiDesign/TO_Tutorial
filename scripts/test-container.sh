@@ -37,6 +37,9 @@ docker run --rm --read-only --tmpfs /tmp:rw,size=256m,mode=1777 \
   --user "$(id -u):$(id -g)" -v "$PWD/artifacts:/reports" \
   -e TOPTEACH_REPORT_DIR=/reports "$image" --verify-methods > artifacts/methods.log
 
+docker run --rm --read-only --tmpfs /tmp:rw,size=256m,mode=1777 \
+  "$image" --teaching-examples > artifacts/teaching-examples.json
+
 docker run -d --name "$name" --read-only --tmpfs /tmp:rw,size=256m,mode=1777 \
   --cap-drop ALL --security-opt no-new-privileges:true \
   -p "127.0.0.1:$port:8080" "$image" >/dev/null

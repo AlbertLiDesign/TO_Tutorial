@@ -10,3 +10,6 @@ TOPTEACH_REPORT_DIR="$PWD/artifacts" dotnet server/bin/Release/net9.0/TopTeach.d
 dotnet server/bin/Release/net9.0/TopTeach.dll --verify-elements
 
 TOPTEACH_REPORT_DIR="$PWD/artifacts" dotnet server/bin/Release/net9.0/TopTeach.dll --verify-methods
+
+# Executable worked examples in Tutorial chapters 5, 8 and 11.
+dotnet server/bin/Release/net9.0/TopTeach.dll --teaching-examples > artifacts/teaching-examples.json
