@@ -1,8 +1,16 @@
-import {locale} from './i18n.js?v=16';
-import {lessons} from './textbook.js?v=16';
+import {locale} from './i18n.js?v=18';
+import {lessons} from './textbook.js?v=19';
 
 let chapter=0;
+const equationObserver=new ResizeObserver(()=>{
+ document.querySelectorAll('.equation-body').forEach(body=>{
+  const wide=body.scrollWidth>body.clientWidth+2;
+  body.parentElement.classList.toggle('has-overflow',wide);
+  if(wide)body.tabIndex=0;else body.removeAttribute('tabindex');
+ });
+});
 function renderLesson(){
+  equationObserver.disconnect();
   const lang=locale()==='en-US'?'en':'zh';
   document.querySelector('#lesson-nav').innerHTML=lessons.map((lesson,i)=>`<button type="button" data-lesson="${i}" class="${chapter===i?'selected':''}" aria-pressed="${chapter===i}"><span>${String(i+1).padStart(2,'0')}</span>${lesson[lang][0]}</button>`).join('');
   const lesson=lessons[chapter][lang];
@@ -17,7 +25,10 @@ function renderLesson(){
     const body=document.createElement('div');body.className='equation-body';
     while(equation.firstChild)body.append(equation.firstChild);
     const number=document.createElement('span');number.className='equation-number';number.textContent=`(${chapter+1}.${i+1})`;
-    equation.append(body,number);
+    const hint=document.createElement('span');hint.className='equation-scroll-hint';
+    hint.textContent=lang==='en'?'Scroll horizontally to read the full equation →':'横向滚动查看完整公式 →';
+    body.setAttribute('aria-label',lang==='en'?'Equation':'公式');
+    equation.append(body,number,hint);equationObserver.observe(body);
   });
   article.querySelectorAll('figure').forEach((fig,i)=>{
     const caption=fig.querySelector('figcaption');const label=document.createElement('strong');

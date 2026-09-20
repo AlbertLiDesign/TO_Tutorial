@@ -108,3 +108,26 @@ body[data-section=tutorial]>main,body[data-section=tutorial]>.run-bar,body[data-
 @media(max-width:700px){#tutorial{grid-template-columns:1fr;padding:10px}#lesson-nav{max-height:min(180px,26vh)}#lesson-content{padding:20px;font-size:14px}#lesson-content h1{font-size:23px}#lesson-content>h2{font-size:17px}.equation-body{font-size:16px}.theory-equation{gap:10px}.theory-figure{padding:7px 7px 0}.theory-figure figcaption{font-size:11px}.chapter-abstract{margin-bottom:20px}}
 @media print{body[data-section=tutorial]{display:block;height:auto;overflow:visible}body[data-section=tutorial]>header,#lesson-nav,.lesson-controls,.try-app{display:none!important}#tutorial{display:block;padding:0;max-width:none}#lesson-content{overflow:visible;border:0;padding:0;font-size:11pt}.theory-figure,.theory-equation,.theory-note{break-inside:avoid}.theory-figure svg{max-height:240px}}
 .teaching-command{white-space:pre-wrap;overflow-wrap:anywhere;background:#f5f2f9;border:1px solid #e3dced;padding:14px 16px;border-radius:4px;font-size:12px;line-height:1.8}.algorithm{padding-left:24px}.inline-source{font-size:.92em}
+
+/* Keep mathematical fonts and vertical metrics independent of prose styles. */
+#lesson-content .katex{font-size:1.08em;line-height:normal;letter-spacing:normal}
+#lesson-content .katex-display{margin:.35em 0;text-align:left}
+#lesson-content .katex-display>.katex{text-align:left}
+#lesson-content .katex .base{white-space:nowrap}
+.equation-body{padding:12px 2px;overflow-x:auto;overflow-y:hidden;line-height:normal}
+.theory-equation{min-width:0;align-items:center}
+#lesson-content p .katex{white-space:nowrap}
+.lesson-guide{padding:16px 20px;background:#f5f2fa;border-left:3px solid #b2a7d1;margin:20px 0}
+#lesson-content .lesson-guide p{margin:5px 0}
+#lesson-content .theory-table{overflow-x:auto;max-width:100%}
+@media(max-width:700px){.equation-body{font-size:15px}.theory-equation{gap:7px}.lesson-guide{padding:12px}}
+@media(max-width:480px){
+ .theory-equation{display:block;padding:10px 0}
+ .equation-number{display:block;text-align:right;margin-top:3px}
+ .equation-body{font-size:15px;padding:10px 0}
+}
+.equation-scroll-hint{display:none;font:11px system-ui,sans-serif;color:var(--muted);margin-top:4px}
+.theory-equation.has-overflow .equation-scroll-hint{display:block}
+.equation-body:focus-visible{outline:2px solid #b2a7d1;outline-offset:3px}
+.theory-equation{flex-wrap:wrap}
+.equation-scroll-hint{flex-basis:100%}

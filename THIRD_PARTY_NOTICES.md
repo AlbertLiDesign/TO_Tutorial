@@ -32,3 +32,7 @@ required by the component licenses.
 
 The image uses official Microsoft .NET SDK and ASP.NET runtime base images.
 Their licenses and third-party notices remain applicable.
+
+## KaTeX
+
+KaTeX 0.16.22 is bundled locally for mathematical typesetting, under the MIT license. Source: https://github.com/KaTeX/KaTeX. The license is included at `server/wwwroot/vendor/katex/LICENSE`; the bundled fonts retain the upstream distribution and license.
