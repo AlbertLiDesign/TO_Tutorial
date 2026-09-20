@@ -1,5 +1,5 @@
-import {figure} from './theory-figures.js?v=14';
-import {practical} from './teaching-practical.js?v=14';
+import {figure} from './theory-figures.js?v=15';
+import {practical} from './teaching-practical.js?v=15';
 // Original bilingual teaching text. Equations use fixed, design-independent loads.
 const p=s=>`<p>${s}</p>`, h=s=>`<h2>${s}</h2>`, eq=s=>`<div class="theory-equation" role="math">${s}</div>`;
 const exercise=(q,a,zh=false)=>`<section class="exercise"><h3>${zh?'分析例题':'Analytical example'}</h3><p>${q}</p><details><summary>${zh?'展开推导与讨论':'Derivation and discussion'}</summary><p>${a}</p></details></section>`;
@@ -100,14 +100,14 @@ const chapters=[
  eq('原始应力准则：σ<sub>VM,e</sub>/σ<sub>VM,max</sub> < RR')+
  h('本文采用的离散变体')+p('App 采用应变能准则的单向 ESO：先对包含弱材料的全域计算原始敏度，再做 α̂=Wα；仅在现有实体中按 α̂ 从低到高删除，直到达到本步体积。空单元的 ρᵖ⁻¹ 因子不能在滤波前省略。为保留带残余刚度的分析域，空单元保留弱刚度。这是柔度问题的能量型 ESO，不宣称复现原始应力拒绝比算法。')+
  eq('V<sub>k+1</sub> = max(V*, (1−ER)V<sub>k</sub>), &nbsp; α<sub>e</sub> ∝ ρ<sub>e</sub><sup>p−1</sup>u<sub>e</sub>ᵀk<sub>e</sub>⁰u<sub>e</sub>, &nbsp; α̂=Wα')+
- p('逐个单元删除使体积只能按离散增量改变；实现采用不低于目标的舍入。删除后的单元不参加恢复竞争，因此早期错误决策不能被后续加回修复。到达体积预算是一种停止条件，不是全局最优的证明。')+
+ p('逐个单元删除使体积只能按离散增量改变；实现向下取整以不超过计划体积上限；最终不足量小于一个单元的实体–弱相体积差。删除后的单元不参加恢复竞争，因此早期错误决策不能被后续加回修复。到达体积预算是一种停止条件，不是全局最优的证明。')+
  exercise('ESO 与 BESO 都得到 50% 体积，是否应有相同形态？','不应如此要求。BESO 可以加回材料，ESO 不可以；更新历史、筛选准则与局部最优可能不同。',true)+source('https://doi.org/10.1016/0045-7949(93)90035-C','Xie, Y. M., & Steven, G. P. (1993). A simple evolutionary procedure for structural optimization. Computers & Structures, 49, 885–896.')+source('https://doi.org/10.1016/S0045-7825(02)00464-4','Tanskanen, P. (2002). The evolutionary structural optimization method: theoretical aspects. Computer Methods in Applied Mechanics and Engineering, 191, 5485–5498.')],
  en:['ESO: one-way evolution','7 · Removal criteria and irreversibility in ESO',
  p('ESO progressively removes inefficient material without restoring it. Original stress-based ESO compares each element’s von Mises stress with the current maximum; the rejection ratio rises after a steady state. This is not the same mathematical formulation as volume-constrained compliance minimization.')+
  eq('Original stress criterion: σ<sub>VM,e</sub>/σ<sub>VM,max</sub> < RR')+
  h('Discrete variant used in this application')+p('App uses strain-energy-based, one-way ESO: compute raw scores over the entire domain, including weak material, apply α̂=Wα, then remove the lowest-ranked existing solids until the scheduled volume is reached. The weak-phase factor ρᵖ⁻¹ must not be omitted before filtering. A weak phase retains the analysis domain. This is energy-based ESO for the compliance problem, not a reproduction of the original stress-rejection algorithm.')+
  eq('V<sub>k+1</sub> = max(V*, (1−ER)V<sub>k</sub>), &nbsp; α<sub>e</sub> ∝ ρ<sub>e</sub><sup>p−1</sup>u<sub>e</sub>ᵀk<sub>e</sub>⁰u<sub>e</sub>, &nbsp; α̂=Wα')+
- p('Whole-element removal quantizes volume, which is rounded upward to the budget. Removed elements do not compete for reintroduction, so a premature removal cannot be repaired by adding material back. Reaching the budget is a stopping rule, not a global-optimality certificate.')+
+ p('Whole-element removal quantizes volume; the retained count is rounded down to respect the scheduled upper bound, leaving less than one solid–weak cell increment unused. Removed elements do not compete for reintroduction, so a premature removal cannot be repaired by adding material back. Reaching the budget is a stopping rule, not a global-optimality certificate.')+
  exercise('Should ESO and BESO produce identical shapes at 50% volume?','No. Their admissible updates differ: BESO can restore material. Removal criteria, history and local optima also matter.')+source('https://doi.org/10.1016/0045-7949(93)90035-C','Xie, Y. M., & Steven, G. P. (1993). A simple evolutionary procedure for structural optimization. Computers & Structures, 49, 885–896.')+source('https://doi.org/10.1016/S0045-7825(02)00464-4','Tanskanen, P. (2002). The evolutionary structural optimization method: theoretical aspects. Computer Methods in Applied Mechanics and Engineering, 191, 5485–5498.')]},
 {zh:['BESO：双向演化','8 · 双向演化法的敏度估计与材料恢复',
  p('BESO 给实体及潜在空单元定义敏度数，在逐步缩减的体积预算内保留较高敏度区域。滤波控制空间变化，历史平均减弱迭代振荡。Soft kill 与 hard kill 是空区域的两种分析处理方式，不只是显示颜色不同。')+
@@ -154,13 +154,13 @@ const chapters=[
  h('A hierarchy of evidence')+p('Analytic patch and scaling tests check mechanics. Independent assembly and solvers check implementation. Stepwise trajectories check a particular algorithm. Mesh studies check discretization dependence. Experiments check the physical model. One level cannot replace the others; project validation notes identify implemented checks and remaining literature-reproduction gaps.')+
  exercise('Can a run that reached its iteration cap be reported as a converged optimum?','No. Report iterations, volume error, objective changes and stopping reason; call it the current iterate.')+book]},
 {zh:['悬臂梁实验','11 · 悬臂梁算例与可重复性协议',
- h('实验 A：验证尺度律')+p('使用本章配套命令固定全实体设计，令载荷从 −1 改为 −2，验证 C 为原来的 4 倍；再将 E 从 1 改为 2，验证 C 减半。命令只求解固定密度场，不运行优化。App 的 Start 会重新初始化优化，因此不用于本实验。')+
+ h('实验 A：验证尺度律')+p('使用本章配套命令固定全实体设计，令载荷从 −1 改为 −2，验证 C 为原来的 4 倍；再将 E 从 1 改为 2，验证 C 减半。命令的 mechanics 部分只求解固定密度场，不运行优化。App 的 Start 会重新初始化优化，因此不用于本实验。')+
  h('实验 B：公平比较方法')+p('记录方法及变体、网格、h、r、材料、总载荷、加载位置、体积目标、停止条件与迭代上限。SIMP 从均匀密度开始，BESO/ESO 从实体开始，level set 从孔洞设计开始，因此起始 C 不应直接排名。比较最终 C 前先确认实际体积相同。')+
  h('实验 C：离散网格敏感性（节点载荷）')+p('以 40×25、h=2、r=1.5 与 80×50、h=1、r=3 比较二维域 80×50。三维可用 40×25×2、h=2 与 80×50×4、h=1。总载荷保持不变，且加载位置相同；奇数网格在相邻节点间分配载荷。这只能检查当前离散模型的网格敏感性，不能据此宣称柔度收敛到非奇异连续体解。只有两个网格也不足以估计收敛阶。')+
  h('实验 D：区分显示和分析')+p('SIMP 的灰度不是实体/空洞制造图。对阈值化后的形态应重新分析，不能沿用连续密度的柔度。Level set 的过渡带和体素显示也有离散误差。记录导出的密度和求解设置，而不是只保留截图。')+
  exercise('把 80×50 改为 160×100，同时保持 h=1 和 r=3，算不算同一物理问题的网格收敛研究？','不算。物理尺寸加倍而物理滤波半径不变；三维厚度若未同步改变，还会改变长厚比。',true)],
  en:['Cantilever experiments','11 · Cantilever benchmarks and a reproducibility protocol',
- h('A: scaling laws')+p('Use the companion command below to hold a fully solid design fixed. Changing force from −1 to −2 must quadruple C; doubling E must halve C. The command solves a fixed density field without optimization. App Start reinitializes optimization and is not the workflow for this experiment.')+
+ h('A: scaling laws')+p('Use the companion command below to hold a fully solid design fixed. Changing force from −1 to −2 must quadruple C; doubling E must halve C. The command’s mechanics section solves a fixed density field without optimization. App Start reinitializes optimization and is not the workflow for this experiment.')+
  h('B: compare methods fairly')+p('Record the method variant, mesh, h, r, material, total load and position, volume target, stopping criteria and iteration budget. SIMP begins at uniform density, BESO/ESO begin solid and level set begins perforated. Initial C values are not a fair ranking. Match actual final volume before comparing final C.')+
  h('C: discrete mesh sensitivity with nodal loads')+p('Compare 40×25, h=2, r=1.5 with 80×50, h=1, r=3 for the same 80×50 plane domain. In 3D use 40×25×2, h=2 and 80×50×4, h=1. Keep the resultant and its position unchanged; odd grids split the force between adjacent nodes. This probes the discrete model’s mesh sensitivity, not convergence to a nonsingular continuum compliance. Two meshes alone also do not determine a convergence order.')+
  h('D: separate display from analysis')+p('SIMP gray density is not a manufactured solid–void part. Thresholding requires reanalysis; the continuous design’s compliance cannot be reused. Level-set transition bands and voxel views also have discretization errors. Export densities and settings, not only screenshots.')+
@@ -250,12 +250,12 @@ const supplements=[
  zh:['ESO 通过不可逆的单元删除缩减材料体积。应力拒绝准则和柔度灵敏度准则具有不同目标解释；本文采用后者的弱材料离散版本，并明确其可行更新集合。',
  h('局部删除代价与离散误差')+eq('ΔC ≈ C,<sub>ρₑ</sub> Δρₑ, &nbsp; Δρₑ&lt;0, &nbsp; C,<sub>ρₑ</sub>≤0')+
  p('在小扰动范围内，删除绝对梯度较小的单元预计引起较小的柔度增长。然而从实体到弱材料是有限变化，并非无穷小扰动；多个单元同时删除还会重新分配载荷路径。因此，局部一阶排序不能替代更新后的有限元分析，也不能证明删除后的结构最优。')+
- eq('𝒮<sub>k+1</sub>⊆𝒮<sub>k</sub>, &nbsp; n<sub>keep</sub>=⌈n(f<sub>k+1</sub>−ρ<sub>min</sub>)/(1−ρ<sub>min</sub>)⌉')+
+ eq('𝒮<sub>k+1</sub>⊆𝒮<sub>k</sub>, &nbsp; n<sub>keep</sub>=⌊n(f<sub>k+1</sub>−ρ<sub>min</sub>)/(1−ρ<sub>min</sub>)⌋')+
  p('𝒮ₖ 为当前实体单元集合。对等体积单元，fₖ₊₁=max(fᵥ,(1−ER)fₖ) 是计划密度均值，计数公式包含弱材料对报告体积的贡献。达到体积预算后，若不允许恢复或交换单元，则不存在继续改进拓扑的双向更新自由度。')],
  en:['ESO reduces material through irreversible element removal. Stress rejection and compliance sensitivity have different objective interpretations. The weak-material energy variant considered here is defined by its admissible update set.',
  h('Local removal cost and finite changes')+eq('ΔC ≈ C,<sub>ρₑ</sub> Δρₑ, &nbsp; Δρₑ&lt;0, &nbsp; C,<sub>ρₑ</sub>≤0')+
  p('For small perturbations, removing an element with a smaller gradient magnitude predicts a smaller compliance increase. A solid-to-weak transition is a finite change, however, and simultaneous deletions redistribute load paths. First-order ranking therefore cannot replace reanalysis or establish optimality of the resulting structure.')+
- eq('𝒮<sub>k+1</sub>⊆𝒮<sub>k</sub>, &nbsp; n<sub>keep</sub>=⌈n(f<sub>k+1</sub>−ρ<sub>min</sub>)/(1−ρ<sub>min</sub>)⌉')+
+ eq('𝒮<sub>k+1</sub>⊆𝒮<sub>k</sub>, &nbsp; n<sub>keep</sub>=⌊n(f<sub>k+1</sub>−ρ<sub>min</sub>)/(1−ρ<sub>min</sub>)⌋')+
  p('Here 𝒮ₖ is the current solid set. For equal-volume elements, fₖ₊₁=max(fᵥ,(1−ER)fₖ) is the scheduled mean density; the count includes the weak phase’s contribution to reported volume. Once the budget is reached, removal-only updates cannot perform material exchanges to further improve topology.')]},
 {zh:['BESO 扩展单向演化的设计更新，使空区域能够重新参与材料分配。关键在于定义可比较的实体与空域敏度、控制空间噪声和迭代振荡，并以体积预算及加入率约束选取单元。',
  h('Hard kill 的节点敏度外推')+eq('α<sub>i</sub><sup>node</sup> = Σ<sub>e∈𝒮(i)</sub>αₑ / |𝒮(i)|, &nbsp; α<sub>i</sub><sup>node</sup>=0 &nbsp; if |𝒮(i)|=0')+
@@ -291,12 +291,12 @@ const supplements=[
 {zh:['验证需分别回答状态求解是否正确、灵敏度是否一致、优化迭代是否稳定，以及离散模型是否代表目标物理问题。本节给出可报告的误差指标，并区分数值停止与最优性证明。',
  h('可行性与约束驻点')+p('对上界型体积约束，严格的可行性残差可取 max(0,V−V*)/V*；|V−V*|/V* 则度量目标体积的满足程度，二者含义不同。只有在预算预期活跃的柔度问题中，才通常同时要求后者较小。')+
  eq('r<sub>KKT</sub>=‖x−Π<sub>[0,1]ⁿ</sub>(x−s[∇C+λ∇V])‖∞, &nbsp; s&gt;0')+
- p('该投影残差适用于连续密度变量，并应结合体积可行性、λ≥0 和互补性检查。步长尺度 s 应固定并明确报告。它不直接适用于二值演化法，也不是当前界面中 Δ 的定义；界面 Δ 来自目标历史变化。')+
+ p('该投影残差适用于连续密度变量，并应结合体积可行性、λ≥0 和互补性检查。步长尺度 s 应固定并明确报告。它不直接适用于二值演化法，也不是当前界面中 Δ 的定义；界面 Δ 来自已显示柔度的历史变化，定义见本章补充说明。')+
  h('误差源与证据边界')+table(['检查','支持的结论','不支持的推论'],[['平衡残差、补片与尺度律','所测状态方程及离散行为一致','真实材料或非线性失效已验证'],['差分与独立装配对照','所测梯度或求解路径一致','全部初始化均收敛到同一设计'],['匹配条件下的迭代轨迹','指定算法与指定参考一致','所有方法已获通用认证'],['固定物理尺度网格研究','所测响应的离散依赖得到量化','点载荷应力峰值必然收敛']])],
  en:['Verification must distinguish state-solve accuracy, derivative consistency, iteration stability and physical-model adequacy. Reportable residuals provide evidence for these separate questions without turning numerical termination into an optimality proof.',
  h('Feasibility and constrained stationarity')+p('For an upper volume bound, max(0,V−V*)/V* measures violation; |V−V*|/V* measures agreement with the target. These are different quantities. The latter is usually also required when the compliance problem is expected to use an active material budget.')+
  eq('r<sub>KKT</sub>=‖x−Π<sub>[0,1]ⁿ</sub>(x−s[∇C+λ∇V])‖∞, &nbsp; s&gt;0')+
- p('This projected residual applies to continuous density variables and accompanies feasibility, λ≥0 and complementarity checks. Report a fixed step scale s. It does not apply directly to binary evolution and is not the interface’s Δ, which measures objective-history change.')+
+ p('This projected residual applies to continuous density variables and accompanies feasibility, λ≥0 and complementarity checks. Report a fixed step scale s. It does not apply directly to binary evolution and is not the interface’s Δ, which measures displayed compliance-history change as defined below.')+
  h('Evidence and its limits')+table(['Check','Supports','Does not establish'],[['Equilibrium, patch and scaling tests','Consistency of tested state equations and discretization','Physical material or nonlinear failure validity'],['Finite differences and independent assembly','Consistency of tested derivatives or solve paths','A unique design from all initializations'],['Matched iteration trajectories','Agreement with a specified reference variant','Universal certification of all methods'],['Fixed-scale mesh study','Quantified discretization dependence','Convergence of point-load stress peaks']])]},
 {fig:'mesh',
  zh:['以悬臂梁为统一算例，分别考察力学尺度律、优化方法差异和网格依赖。所有比较均需固定物理问题，并记录初始化、实际体积及停止原因；本节给出实验协议，不预设某种方法优于其他方法。',

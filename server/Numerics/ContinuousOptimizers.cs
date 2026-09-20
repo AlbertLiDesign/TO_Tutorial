@@ -91,7 +91,7 @@ public sealed class ESO : IterativeOptimizer
         Sensitivities=filter.Apply(Model.Elements.Select(e=>Math.Pow(e.Xe,settings.Penalty-1)*energy[e.ID]).ToArray()).ToList();
         scheduledVolume=Math.Max(settings.Vf,scheduledVolume*(1-settings.Er));
         int n=Model.Elements.Count;
-        int keep=(int)Math.Ceiling((scheduledVolume-Minimum)*n/(1-Minimum));
+        int keep=(int)Math.Floor((scheduledVolume-Minimum)*n/(1-Minimum)+1e-10);
         var solid=Model.Elements.Where(e=>e.Xe>.5).OrderBy(e=>Sensitivities[e.ID]).ThenBy(e=>e.ID).ToArray();
         int remove=Math.Max(0,solid.Length-keep);double threshold=0;
         for(int i=0;i<remove;i++){solid[i].Xe=Minimum;threshold=Sensitivities[solid[i].ID];}

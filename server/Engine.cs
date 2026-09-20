@@ -86,6 +86,12 @@ public sealed class Run : IDisposable
     public DateTime Touched=DateTime.UtcNow;
     public Run(Settings s){Settings=s;}
     public void Dispose(){Cancel=true;}
+    public static double DisplayedDelta(double[] values)
+    {
+        if(values.Length<10)return 1;
+        double previous=values.Skip(values.Length-10).Take(5).Sum();
+        return Math.Abs(values.TakeLast(5).Sum()-previous)/Math.Max(Math.Abs(previous),1e-30);
+    }
     public void Execute(SemaphoreSlim queue)
     {
         string dir=Path.Combine(Path.GetTempPath(),"topteach-"+Id); Directory.CreateDirectory(dir);
@@ -104,7 +110,7 @@ public sealed class Run : IDisposable
                     if(Steps>0)Steps--;
                     lock(Gate)State="running";
                     int prior=b.iter; b.Optimize(false);
-                    if(b.iter>prior){var f=Engine.CaptureEvaluated(b,Settings,clock.Elapsed.TotalSeconds);f=f with {Seconds=clock.Elapsed.TotalSeconds};lock(Gate)Frames.Add(f);}
+                    if(b.iter>prior){var f=Engine.CaptureEvaluated(b,Settings,clock.Elapsed.TotalSeconds);lock(Gate){var values=Frames.Select(x=>x.C).Append(f.C).ToArray();f=f with {Seconds=clock.Elapsed.TotalSeconds,Delta=DisplayedDelta(values)};Frames.Add(f);}}
                 }
                 lock(Gate) State=Cancel?"cancelled":b.iter>=Settings.MaxIter?"limit":"converged";
             }

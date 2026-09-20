@@ -8,6 +8,12 @@ public static class MethodVerification
     public static void Run()
     {
         var reports=new List<object>();
+        Require(Math.Abs(global::Run.DisplayedDelta(Enumerable.Range(1,10).Select(i=>(double)i).ToArray())-5.0/3)<1e-12,"Displayed delta window mismatch");
+        using(var m=Engine.Build(new Settings(Nx:4,Ny:4,Vf:.05,Er:.2,Method:"ESO"))){
+            var o=new ESO(m,new Settings(Nx:4,Ny:4,Vf:.05,Er:.2,Method:"ESO"));o.Initialize();while(!o.converged)o.Optimize();
+            Require(m.Elements.Average(e=>e.Xe)<=.05,"ESO exceeded coarse-mesh budget");
+        }
+
         // Check the physical density filter chain rule against FEA finite differences.
         using(var model=Engine.Build(new Settings(Nx:8,Ny:6))){
             model.Initialize();var filter=new DensityFilter(model,2);
@@ -112,7 +118,7 @@ public static class MethodVerification
                 }
                 if(method=="level-set")Require(hasBoundary&&maxVolumeError<1e-8,"Level set did not evolve an interface at the prescribed volume: "+previous.Average());
                 if(method=="BESO-hard")Require(regrown>0,"Hard-kill BESO never restored material");
-                if(method=="ESO")Require(previous.Average()>=settings.Vf-1e-10&&previous.Average()-settings.Vf<=1.0/previous.Length,"ESO final volume");
+                if(method=="ESO")Require(previous.Average()<=settings.Vf+1e-10&&settings.Vf-previous.Average()<=1.0/previous.Length,"ESO final volume");
                 reports.Add(new{method,dim,steps,initialC,finalC=solver.LastC,volume=previous.Average(),maxVolumeError,intermediate,hasBoundary,regrown,passed=true});
             }finally{solver.Model.Dispose();}
         }

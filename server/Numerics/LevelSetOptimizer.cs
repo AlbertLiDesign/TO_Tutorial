@@ -43,22 +43,27 @@ public sealed class LevelSetOptimizer : IterativeOptimizer
         double oldVolume=phi.Average(Density),target=Math.Max(settings.Vf,oldVolume*(1-settings.Er));
         var working=(double[])phi.Clone();
         if(iter%5==0){working=Reinitialize(working);ShiftToVolume(working,oldVolume);}
-        // Extend solid-side energy to the void before smoothing the velocity.
-        // Weak-phase displacement gradients are not the solid boundary shape derivative.
-        var solid=Enumerable.Range(0,phi.Length).Where(i=>working[i]>=0).ToArray();
-        var solidTree=new KDTree<int>(3);foreach(int i in solid)solidTree.AddPoint(points[i],i);
-        var extended=unit.Select((u,i)=>working[i]>=0?u:unit[solidTree.NearestNeighbors(points[i],1).First()]).ToArray();
-        var filtered=filter.Apply(extended);var band=Enumerable.Range(0,phi.Length).Where(i=>Math.Abs(working[i])<1.5).ToArray();
-        if(band.Length==0)throw new InvalidOperationException("Level-set interface vanished; use a finer mesh or a less extreme volume.");
-        double mean=Math.Max(band.Average(i=>filtered[i]),1e-30);
-        var tree=new KDTree<int>(3);foreach(int i in band)tree.AddPoint(points[i],i);
-        var drive=new double[phi.Length];
-        for(int i=0;i<phi.Length;i++){
-            int j=Math.Abs(working[i])<1.5?i:tree.NearestNeighbors(points[i],1).First();
-            drive[i]=filtered[j]/mean;
+        double[] BuildDrive(double[] working)
+        {
+            // Extend solid-side energy to the void before smoothing the velocity.
+            // Weak-phase displacement gradients are not the solid boundary shape derivative.
+            var solid=Enumerable.Range(0,phi.Length).Where(i=>working[i]>=0).ToArray();
+            var solidTree=new KDTree<int>(3);foreach(int i in solid)solidTree.AddPoint(points[i],i);
+            var extended=unit.Select((u,i)=>working[i]>=0?u:unit[solidTree.NearestNeighbors(points[i],1).First()]).ToArray();
+            var filtered=filter.Apply(extended);var band=Enumerable.Range(0,phi.Length).Where(i=>Math.Abs(working[i])<1.5).ToArray();
+            if(band.Length==0)throw new InvalidOperationException("Level-set interface vanished; use a finer mesh or a less extreme volume.");
+            double mean=Math.Max(band.Average(i=>filtered[i]),1e-30);
+            var tree=new KDTree<int>(3);foreach(int i in band)tree.AddPoint(points[i],i);
+            var drive=new double[phi.Length];
+            for(int i=0;i<phi.Length;i++){
+                int j=Math.Abs(working[i])<1.5?i:tree.NearestNeighbors(points[i],1).First();
+                drive[i]=filtered[j]/mean;
+            }
+            var curvature=Curvature(working);
+            for(int i=0;i<drive.Length;i++)drive[i]+=settings.Regularization*curvature[i];
+            return drive;
         }
-        var curvature=Curvature(working);
-        for(int i=0;i<drive.Length;i++)drive[i]+=settings.Regularization*curvature[i];
+        var drive=BuildDrive(working);
         double lower=drive.Min()-1,upper=drive.Max()+1,lambda=0;
         double[] candidate=null;bool accepted=false;double step=settings.TimeStep;
         // CFL-limited boundary transport, with volume multiplier and energy backtracking.
@@ -80,6 +85,7 @@ public sealed class LevelSetOptimizer : IterativeOptimizer
             // Distance rebuilding is geometric housekeeping, not a guaranteed descent.
             // Retry from the original field if it obstructs the line search.
             working=(double[])phi.Clone();
+            drive=BuildDrive(working);lower=drive.Min()-1;upper=drive.Max()+1;
         }
         change=accepted?candidate.Select((v,i)=>Math.Abs(Density(v)-Density(phi[i]))).Max():1;
         if(accepted)phi=candidate;Apply(phi);Finish(lambda);

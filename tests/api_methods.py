@@ -29,6 +29,28 @@ for dim in [2,3]:
         if method=='ESO':
             for a,b in zip(frames,frames[1:]):assert all(y<=x for x,y in zip(a['density'],b['density']))
         reports.append(dict(dim=dim,method=method,state=result['state'],frames=len(frames),passed=True))
+# Displayed delta must reproduce the post-update compliance frames exactly.
+run=req('/api/runs',dict(nx=8,ny=6,method='SIMP',maxIter=12))['id']
+deadline=time.time()+60
+while True:
+    result=req('/api/runs/'+run)
+    assert result['state']!='error',result
+    if result['state'] in ['limit','converged']:break
+    assert time.time()<deadline
+    time.sleep(.1)
+frames=[]
+while len(frames)<result['count']:
+    batch=req('/api/runs/'+run+'?after='+str(frames[-1]['iter'] if frames else 0))['frames']
+    assert batch
+    frames.extend(batch)
+assert len(frames)>=10
+for i,f in enumerate(frames):
+    expected=1.0
+    if i>=9:
+        old=sum(x['c'] for x in frames[i-9:i-4]);new=sum(x['c'] for x in frames[i-4:i+1])
+        expected=abs(new-old)/max(abs(old),1e-30)
+    assert abs(f['delta']-expected)<1e-12,(i,f['delta'],expected)
+reports.append(dict(test='post-update displayed delta',passed=True))
 for invalid in [dict(method='wrong'),dict(besoKill='wrong'),dict(elementSize=0),dict(additionRatio=.3),dict(moveLimit=0),dict(timeStep=1),dict(regularization=-1)]:
     try:req('/api/runs',invalid);raise AssertionError('Invalid parameters accepted')
     except urllib.error.HTTPError as e:assert e.code==400

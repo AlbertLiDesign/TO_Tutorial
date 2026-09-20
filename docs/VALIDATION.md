@@ -30,3 +30,7 @@ The application implements identifiable classical formulations, but these tests 
 ## Executable Tutorial examples
 
 `dotnet server/bin/Release/net9.0/TopTeach.dll --teaching-examples` (after a Release build) solves a fixed fully solid 12×8 Q4 and 12×8×2 H8 cantilever, checking load and modulus scaling to 1e-8. It also checks the supplied-gradient OC example and the six-cell BESO ranking example. These local update exercises do not constitute a full optimization benchmark. Local and container verification scripts run this command.
+
+The Tutorial also includes a complete 4×4 Q4 SIMP update. The `worked` field in `--teaching-examples` exports connectivity, the reduced initial stiffness matrix, forces, displacements, compliance gradients and the reanalyzed updated design. `server/wwwroot/worked-cantilever.json` is its recorded example, not a converged-optimization benchmark.
+
+ESO and hard-kill BESO round retained counts down to respect the scheduled upper volume bound. The final count can leave less than one cell increment unused; incompatible passive-solid counts are rejected. Soft-kill threshold updates can still have quantization or tie-related volume mismatch. The displayed change metric uses ten reanalyzed frame compliances (two five-frame sums); internal stopping histories remain pre-update and must be distinguished from that display metric.

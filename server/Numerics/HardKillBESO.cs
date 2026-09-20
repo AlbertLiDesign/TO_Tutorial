@@ -17,7 +17,7 @@ public sealed class HardKillBESO : IterativeOptimizer
         base.Initialize();volume=1;
         var loads=Model.Loads.Select(l=>l.NodeID).ToHashSet();
         passive=settings.ProtectLoad?Model.Elements.Where(e=>e.Nodes.Any(n=>loads.Contains(n.ID))).Select(e=>e.ID).ToArray():Array.Empty<int>();
-        if(passive.Length>Math.Ceiling(settings.Vf*Model.Elements.Count))throw new ArgumentException("The solid load pad exceeds the volume budget.");
+        if(passive.Length>Math.Floor(settings.Vf*Model.Elements.Count+1e-10))throw new ArgumentException("The solid load pad exceeds the volume budget.");
         var tree=new KDTree<int>(3);
         foreach(var node in Model.Nodes)tree.AddPoint(new[]{node.Position.X,node.Position.Y,node.Position.Z},node.ID);
         nodesInRadius=new int[Model.Elements.Count][];nodalWeights=new double[Model.Elements.Count][];
@@ -43,7 +43,7 @@ public sealed class HardKillBESO : IterativeOptimizer
         if(Sensitivities.Count>0)for(int i=0;i<score.Length;i++)score[i]=(score[i]+Sensitivities[i])*.5;
         Sensitivities=score.ToList();volume=Math.Max(settings.Vf,volume*(1-settings.Er));
         var previous=Model.Elements.Select(e=>e.Xe).ToArray();
-        int keep=(int)Math.Ceiling(volume*score.Length);
+        int keep=(int)Math.Floor(volume*score.Length+1e-10);
         var admissible=Enumerable.Range(0,score.Length).Where(i=>previous[i]==0).OrderByDescending(i=>score[i]).ThenBy(i=>i).Take((int)Math.Floor(settings.AdditionRatio*score.Length+1e-10)).ToHashSet();
         var selected=new bool[score.Length];foreach(int i in passive)selected[i]=true;
         foreach(int i in Enumerable.Range(0,score.Length).Where(i=>!selected[i]&&(previous[i]>0||admissible.Contains(i))).OrderByDescending(i=>score[i]).ThenBy(i=>i).Take(Math.Max(0,keep-passive.Length)))selected[i]=true;
