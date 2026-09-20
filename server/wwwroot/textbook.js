@@ -1,5 +1,5 @@
-import {figure} from './theory-figures.js?v=15';
-import {practical} from './teaching-practical.js?v=15';
+import {figure} from './theory-figures.js?v=16';
+import {practical} from './teaching-practical.js?v=16';
 // Original bilingual teaching text. Equations use fixed, design-independent loads.
 const p=s=>`<p>${s}</p>`, h=s=>`<h2>${s}</h2>`, eq=s=>`<div class="theory-equation" role="math">${s}</div>`;
 const exercise=(q,a,zh=false)=>`<section class="exercise"><h3>${zh?'分析例题':'Analytical example'}</h3><p>${q}</p><details><summary>${zh?'展开推导与讨论':'Derivation and discussion'}</summary><p>${a}</p></details></section>`;
